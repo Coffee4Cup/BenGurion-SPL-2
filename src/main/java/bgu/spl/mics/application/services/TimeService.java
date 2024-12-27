@@ -32,6 +32,7 @@ public class TimeService extends MicroService {
      */
     @Override
     protected void initialize() {
+        subscribeBroadcast(TerminatedBroadcast.class, t->terminate());
         System.out.println("Starting TimeService");
         while(duration > 0){
             try{
