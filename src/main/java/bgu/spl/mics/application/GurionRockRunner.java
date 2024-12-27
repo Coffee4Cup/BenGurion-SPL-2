@@ -1,5 +1,11 @@
 package bgu.spl.mics.application;
 
+import bgu.spl.mics.MessageBusImpl;
+import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.objects.Camera;
+import bgu.spl.mics.application.services.CameraService;
+import bgu.spl.mics.application.services.TimeService;
+
 /**
  * The main entry point for the GurionRock Pro Max Ultra Over 9000 simulation.
  * <p>
@@ -18,9 +24,14 @@ public class GurionRockRunner {
      */
     public static void main(String[] args) {
         System.out.println("Hello World!!!");
-
-        // TODO: Parse configuration file.
-        // TODO: Initialize system components and services.
-        // TODO: Start the simulation.
+        MessageBusImpl msgbs;
+        MicroService m1,m2;
+        Camera c = new Camera();
+        m1 = new CameraService(c);
+        m2 = new TimeService(1000 , 10);
+        Thread t1 = new Thread(m1);
+        Thread t2 = new Thread(m2);
+        t1.start();
+        t2.start();
     }
 }

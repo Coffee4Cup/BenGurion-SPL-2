@@ -1,47 +1,147 @@
 package bgu.spl.mics;
 
-/**
+/*
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
  * Write your implementation here!
  * Only one public method (in addition to getters which can be public solely for unit testing) may be added to this class
  * All other methods and members you add the class must be private.
  */
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.concurrent.LinkedBlockingQueue;
+import bgu.spl.mics.application.objects.EventRoundRobin;
+
+
+/**
+ * order of sync:
+ * eventSubscriptions
+ * event sub list
+ * broadcastSubscriptions
+ * broadcast sub list
+ * bus
+ * message queue
+ * eventRoundRobin
+ * EventRoundRobin class
+ */
 public class MessageBusImpl implements MessageBus {
-	
+
+
+
+
+	private final HashMap<MicroService, LinkedBlockingQueue<Message>> bus;
+	private final HashMap<Class<? extends Event<?>>, LinkedList<MicroService>> eventSubscriptions;
+	private final HashMap<Class<? extends Broadcast>, LinkedList<MicroService>> broadcastSubscriptions;
+	private final HashMap<Class<? extends Event<?>>, EventRoundRobin> eventRoundRobin;
+
+	private static class MessageBusHolder{
+		private static final MessageBusImpl instance = new MessageBusImpl();
+	}
+
+	public static MessageBusImpl getInstance(){
+		return MessageBusImpl.MessageBusHolder.instance;
+	}
+
+	private MessageBusImpl(){
+		System.out.println("Initializing MessageBusImpl");
+		bus = new HashMap<MicroService, LinkedBlockingQueue<Message>>();
+		eventSubscriptions = new HashMap<Class<? extends Event<?>>, LinkedList<MicroService>>();
+		broadcastSubscriptions = new HashMap<Class<? extends Broadcast>, LinkedList<MicroService>>();
+		eventRoundRobin = new HashMap<Class<? extends Event<?>>, EventRoundRobin>();
+	}
+
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-		// TODO Auto-generated method stub
+		System.out.println(m.getName() + " subscribed to ");
+		LinkedList<MicroService> eventSubs;
+		synchronized(eventSubscriptions) {
+			//get list of ms subbed to event
+			//if nobody is subbed, create new list of subs
+			eventSubs = eventSubscriptions.computeIfAbsent(type, k -> new LinkedList<MicroService>());
+			synchronized(eventSubs) {
+				eventSubs.add(m);
+				synchronized (eventRoundRobin){
+					if(!eventRoundRobin.containsKey(type)) {
+						eventRoundRobin.put(type, new EventRoundRobin(1));
+					}
+					else{
+						eventRoundRobin.get(type).sizeIncrement();
+					}
+				}
+			}
+		}
+
 
 	}
 
 	@Override
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-		// TODO Auto-generated method stub
+		System.out.println(m.getName() + " subscribing to ");
+		LinkedList<MicroService> broadcastSubs;
+		synchronized(broadcastSubscriptions) {
+			//get list of ms subbed to broadcast
+			//if nobody is subbed, create new list of subs
+			broadcastSubs = broadcastSubscriptions.computeIfAbsent(type, k -> new LinkedList<MicroService>());
+			synchronized(broadcastSubs) {
+				broadcastSubs.add(m);
+			}
+		}
 
 	}
 
 	@Override
 	public <T> void complete(Event<T> e, T result) {
-		// TODO Auto-generated method stub
-
+		e.getFuture().resolve(result);
 	}
 
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		// TODO Auto-generated method stub
+		System.out.println("Sending Broadcast");
+		LinkedList<MicroService> subs;
+		synchronized(broadcastSubscriptions) {
+			subs = broadcastSubscriptions.get(b.getClass());
+		}
+		synchronized(subs) {
+			for(MicroService m : subs) {
+				synchronized(bus) {
+					bus.get(m).offer(b);
+				}
+			}
+		}
 
 	}
 
-	
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
-		// TODO Auto-generated method stub
-		return null;
+		System.out.println("Sending event: " + e);
+		LinkedList<MicroService> subs;
+		synchronized(eventSubscriptions) {
+			//get list of ms subbed to event
+			subs = eventSubscriptions.get(e.getClass());
+			if (subs == null) {
+				return null;
+			}
+			synchronized(subs) {
+				MicroService m;
+				synchronized (eventRoundRobin){
+					m = subs.get(eventRoundRobin.get(e.getClass()).indexIncrement());
+				}
+				synchronized(bus){
+					bus.get(m).offer(e);
+				}
+			}
+		}
+		return e.getFuture();
 	}
 
 	@Override
 	public void register(MicroService m) {
-		// TODO Auto-generated method stub
+		System.out.println(m.getName() + " registered");
+
+		synchronized(bus){
+			bus.put(m, new LinkedBlockingQueue<Message>());			//when do i sub?
+		}
+
 
 	}
 
@@ -53,10 +153,13 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+		System.out.println(m.getName() + " awaiting message");
+		LinkedBlockingQueue<Message> queue;
+		synchronized(bus) {			//TODO check if necessary to lock here
+			queue = bus.get(m);
+		}
+		return queue.take();
 	}
 
-	
 
 }

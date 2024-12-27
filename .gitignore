@@ -3,3 +3,7 @@ example_input_2/*
 .settings/*
 .classpath
 .project
+.idea
+target/*
+src/main/java/bgu/spl/mics/example/*
+
