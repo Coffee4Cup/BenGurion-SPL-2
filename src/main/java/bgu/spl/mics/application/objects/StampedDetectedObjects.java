@@ -20,4 +20,12 @@ public class StampedDetectedObjects {
         this.detectedObjects = detectedObjects;
     }
 
+    public int getTime() {
+        return time;
+    }
+
+    public LinkedList<DetectedObject> getDetectedObjects() {
+        return detectedObjects;
+    }
+
 }

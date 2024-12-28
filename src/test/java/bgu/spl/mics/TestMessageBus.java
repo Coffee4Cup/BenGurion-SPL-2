@@ -23,7 +23,7 @@ public class TestMessageBus{
 	
 	@BeforeEach
 	public void setUp() {
-		Camera c = new Camera("1",new LinkedList<StampedDetectedObjects>());
+		//Camera c = new Camera();
 		m1 = new CameraService(c);
 		m2 = new TimeService(1000 , 10);
 	}

@@ -69,6 +69,7 @@ public class MessageBusImpl implements MessageBus {
 					}
 				}
 			}
+			eventSubscriptions.notifyAll();
 		}
 
 
@@ -118,15 +119,24 @@ public class MessageBusImpl implements MessageBus {
 		synchronized(eventSubscriptions) {
 			//get list of ms subbed to event
 			subs = eventSubscriptions.get(e.getClass());
-			if (subs == null) {
-				return null;
+			while (subs == null) {
+				try {
+					eventSubscriptions.wait();
+					subs = eventSubscriptions.get(e.getClass());
+				}catch (InterruptedException ie){
+					subs = eventSubscriptions.get(e.getClass());
+					if(subs != null){
+						break;
+					}
+					continue;
+				}
 			}
-			synchronized(subs) {
+			synchronized (subs) {
 				MicroService m;
-				synchronized (eventRoundRobin){
+				synchronized (eventRoundRobin) {
 					m = subs.get(eventRoundRobin.get(e.getClass()).indexIncrement());
 				}
-				synchronized(bus){
+				synchronized (bus) {
 					bus.get(m).offer(e);
 				}
 			}

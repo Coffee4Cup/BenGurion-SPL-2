@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.PoseEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.GPSIMU;
 
 /**
@@ -9,6 +11,7 @@ import bgu.spl.mics.application.objects.GPSIMU;
  */
 public class PoseService extends MicroService {
 
+    private GPSIMU gpsimu;
     /**
      * Constructor for PoseService.
      *
@@ -16,7 +19,7 @@ public class PoseService extends MicroService {
      */
     public PoseService(GPSIMU gpsimu) {
         super("Change_This_Name");
-        // TODO Implement this
+        this.gpsimu = gpsimu;
     }
 
     /**
@@ -25,6 +28,8 @@ public class PoseService extends MicroService {
      */
     @Override
     protected void initialize() {
-        // TODO Implement this
+        subscribeBroadcast(TickBroadcast.class, t-> {
+            PoseEvent pe = new PoseEvent(gpsimu.getPose(t.getTick()));
+        });
     }
 }

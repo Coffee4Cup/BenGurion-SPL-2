@@ -24,4 +24,10 @@ public class LiDarWorkerTracker {
     public String toString(){
         return "ID: "+id+", frequency: "+frequency+", status: "+status + " dataPath: "+lidars_data_path +" LastTrackedObjects: "+lastTrackedObjects;
     }
+
+    public String getPath(){
+        return lidars_data_path;
+    }
+
+
 }

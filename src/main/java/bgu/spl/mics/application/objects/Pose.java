@@ -16,6 +16,10 @@ public class Pose {
         this.yaw = yaw;
         this.time = time;
     }
+    public int getTime(){
+        return this.time;
+    }
+
     public String toString(){
         return "x: " + x + ", y: " + y + ", yaw: " + yaw + ", time: " + time;
     }

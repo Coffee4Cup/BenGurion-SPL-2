@@ -4,6 +4,8 @@ import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 
+import java.util.concurrent.TimeUnit;
+
 import static java.lang.Thread.sleep;
 
 /**
@@ -14,6 +16,7 @@ public class TimeService extends MicroService {
 
     private int tickTime;
     private int duration;
+    private int currentTick;
     /**
      * Constructor for TimeService.
      *
@@ -24,6 +27,8 @@ public class TimeService extends MicroService {
         super("clock");
         tickTime = TickTime;
         duration = Duration;
+        currentTick = 1;
+
     }
 
     /**
@@ -34,14 +39,14 @@ public class TimeService extends MicroService {
     protected void initialize() {
         subscribeBroadcast(TerminatedBroadcast.class, t->terminate());
         System.out.println("Starting TimeService");
-        while(duration > 0){
+        while(currentTick < duration) {
             try{
-                sleep(tickTime);
+                TimeUnit.SECONDS.sleep(tickTime);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            sendBroadcast(new TickBroadcast(tickTime));
-            duration--;
+            sendBroadcast(new TickBroadcast(currentTick));
+            currentTick+=tickTime;
         }
         sendBroadcast(new TerminatedBroadcast());
     }
