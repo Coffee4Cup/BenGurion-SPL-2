@@ -6,7 +6,6 @@ import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.CameraService;
 import bgu.spl.mics.application.services.TimeService;
 import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.FileNotFoundException;
@@ -55,13 +54,13 @@ public class GurionRockRunner {
         }
     }
 
-    public class Lidars{
+    public class LidarWorkers{
         public LinkedList<LiDarConfig> LidarConfigurations;
-        public String lidar_datas_path;
+        public String lidars_data_path;
 
-        public Lidars(LinkedList<LiDarConfig> lidarConfigurations, String lidar_datas_path) {
-            this.LidarConfigurations = lidarConfigurations;
-            this.lidar_datas_path = lidar_datas_path;
+        public LidarWorkers(LinkedList<LiDarConfig> LidarConfigurations, String lidars_data_path) {
+            this.LidarConfigurations = LidarConfigurations;
+            this.lidars_data_path = lidars_data_path;
         }
     }
 
@@ -76,14 +75,14 @@ public class GurionRockRunner {
     }
     public class Config {
         public Cameras Cameras;
-        public Lidars Lidars;
+        public LidarWorkers LidarWorkers;
         public String poseJsonFile;
         public int ticktime;
         public int duration;
 
-        public Config(Cameras Cameras, Lidars Lidars, String poseJsonFile, int ticktime, int duration) {
+        public Config(Cameras Cameras, LidarWorkers LidarWorkers, String poseJsonFile, int ticktime, int duration) {
             this.Cameras = Cameras;
-            this.Lidars = Lidars;
+            this.LidarWorkers = LidarWorkers;
             this.poseJsonFile = poseJsonFile;
             this.ticktime = ticktime;
             this.duration = duration;
@@ -93,11 +92,11 @@ public class GurionRockRunner {
         Gson gson = new Gson();
         try {
             //Reader from java IO to read config file
-            Reader configReader = new FileReader("example input/configuration_file.json");
+            Reader configReader = new FileReader("./configuration_file.json");
             //New class Config with fields corresponding to configuration_file.json
             Config config = gson.fromJson(configReader, Config.class);
             //Reading from new file addressed in configuration_file.json
-            configReader = new FileReader("example input/"+config.Cameras.camera_datas_path);
+            configReader = new FileReader(config.Cameras.camera_datas_path);
             //creating a new TypeToken to parse camera_data.json into Map<String, List<StampedDetectedObject>>
             Type cameraDataType = new TypeToken<Map<String, LinkedList<StampedDetectedObjects>>>() {}.getType();
             Map<String, LinkedList<StampedDetectedObjects>> cameraData = gson.fromJson(configReader, cameraDataType);
@@ -110,18 +109,17 @@ public class GurionRockRunner {
             for(CameraConfig cfg : config.Cameras.CamerasConfigurations){
                 myCameras.add(new Camera(cfg.id, cfg.frequency,  STATUS.UP, cameraData.get(cfg.camera_key)));
             }
-            configReader = new FileReader("example input/"+config.Lidars.lidar_datas_path);
-            LiDarDataBase lDataBase = gson.fromJson(configReader, LiDarDataBase.class);
-            LinkedList<LiDarWorkerTracker> myLidars = new LinkedList<>();
-            for(LiDarConfig cfg: config.Lidars.LidarConfigurations){
-                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, STATUS.UP));
-            }
-
-         /**   Reader lidarReader = new FileReader("example input/lidar_data.json");
-            Reader poseReader = new FileReader("example input/pose_data.json");
-            Reader cameraReader = new FileReader("example input/camera_data.json");*/
-
             System.out.println(myCameras.getFirst());
+            LinkedList<LiDarWorkerTracker> myLidars = new LinkedList<>();
+            for(LiDarConfig cfg: config.LidarWorkers.LidarConfigurations){
+                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, STATUS.UP, config.LidarWorkers.lidars_data_path));
+            }
+            System.out.println(myLidars.getFirst());
+            configReader = new FileReader(config.poseJsonFile);
+            Type poseListType = new TypeToken<LinkedList<Pose>>() {}.getType();
+            GPSIMU gpsimu = new GPSIMU(gson.fromJson(configReader, poseListType));
+            System.out.println(gpsimu);
+
             MessageBusImpl msgbs;
             MicroService m1, m2;
             m1 = new CameraService(myCameras.getFirst());
