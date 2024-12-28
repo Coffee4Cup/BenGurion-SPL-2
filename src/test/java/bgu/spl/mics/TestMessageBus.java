@@ -1,6 +1,8 @@
 package bgu.spl.mics;
 
 import bgu.spl.mics.application.objects.Camera;
+import bgu.spl.mics.application.objects.STATUS;
+import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.services.CameraService;
 import bgu.spl.mics.application.services.TimeService;
 import bgu.spl.mics.example.services.ExampleBroadcastListenerService;
@@ -9,6 +11,9 @@ import bgu.spl.mics.example.services.ExampleMessageSenderService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.LinkedList;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -18,7 +23,7 @@ public class TestMessageBus{
 	
 	@BeforeEach
 	public void setUp() {
-		Camera c = new Camera();
+		Camera c = new Camera("1",new LinkedList<StampedDetectedObjects>());
 		m1 = new CameraService(c);
 		m2 = new TimeService(1000 , 10);
 	}
