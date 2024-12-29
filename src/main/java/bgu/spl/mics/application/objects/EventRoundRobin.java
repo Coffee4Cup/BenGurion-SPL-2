@@ -18,4 +18,14 @@ public class EventRoundRobin {
         this.currentSize++;
     }
 
+    /**
+     * Getters used ONLY for tests
+     */
+    public final int getCurrentSize() {
+        return currentSize;
+    }
+    public final int getIndex() {
+        return index;
+    }
+
 }

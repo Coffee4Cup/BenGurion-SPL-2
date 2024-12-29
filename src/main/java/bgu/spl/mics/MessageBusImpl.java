@@ -172,4 +172,59 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 
+
+
+
+
+	/**
+	 * Getters used ONLY for tests
+	 */
+	public final Integer getBusSize(){
+		if(bus == null)
+			return null;
+		return bus.size();
+	}
+	public final Integer getQueueSize(MicroService m){
+		if(!bus.containsKey(m)){
+			return null;
+		}
+		return bus.get(m).size();
+	}
+	public final Integer getNumOfEvents(){
+		if(eventSubscriptions == null)
+			return null;
+		return eventSubscriptions.size();
+	}
+	public final Integer getNumOfBroadcasts(){
+		if(broadcastSubscriptions == null)
+			return null;
+		return broadcastSubscriptions.size();
+	}
+	public final Integer getEventSubsSize(Class<? extends Event<?>> clazz){
+		if(!eventSubscriptions.containsKey(clazz))
+			return null;
+		return eventSubscriptions.get(clazz).size();
+	}
+	public final Integer getBroadcastSubsSize(Class<? extends Broadcast> clazz){
+		if(!broadcastSubscriptions.containsKey(clazz))
+			return null;
+		return broadcastSubscriptions.get(clazz).size();
+	}
+	public final Integer getTotalRoundRobins(){
+		if(eventRoundRobin == null)
+			return null;
+		return eventRoundRobin.size();
+	}
+	public final Integer getRoundRobinSubsSize(Class<? extends Event<?>> clazz){
+		if(!eventRoundRobin.containsKey(clazz))
+			return null;
+		return eventRoundRobin.get(clazz).getCurrentSize();
+	}
+	public final Integer getRoundRobinIndex(Class<? extends Event<?>> clazz){
+		if(eventRoundRobin == null)
+			return null;
+		return eventRoundRobin.get(clazz).getIndex();
+	}
+
+
 }

@@ -172,4 +172,14 @@ public abstract class MicroService implements Runnable {
         System.out.println("MicroService "+name+" terminated");
     }
 
+    /**
+     * Getters used ONLY for tests
+     */
+    public final int getEventSubSize(){
+        return eventCallbacks.size();
+    }
+    public final int getBroadcastSubSize(){
+        return broadcastCallbacks.size();
+    }
+
 }
