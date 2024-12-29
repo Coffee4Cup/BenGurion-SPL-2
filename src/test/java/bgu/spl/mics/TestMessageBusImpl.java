@@ -125,11 +125,25 @@ public class TestMessageBusImpl {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+		assertTrue(messageBus.getInstance().getBroadcastSubsSize(DummyBroadcast.class) == 10);
 		assertTrue(messageBus.getInstance().getBroadcastSubsSize(TerminatedBroadcast.class) == 10);
 
 	}
 	@Test
 	public void testSubscribeEvent() {
+		for(Thread t: threadList){
+			t.start();
+		}
+		try{
+			Thread.sleep(1000);
+			microService.sendBroadcast(new TerminatedBroadcast());
+			for(Thread t: threadList){
+				t.join();
+			}
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		assertTrue(messageBus.getInstance().getEventSubsSize(DummyEvent.class) == 10);
 
 	}
 	@Test

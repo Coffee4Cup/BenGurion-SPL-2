@@ -144,7 +144,6 @@ class TestMicroService {
 
     @Test
     void sendEvent() {
-
         for(Thread t: threadList){
             t.start();
         }
