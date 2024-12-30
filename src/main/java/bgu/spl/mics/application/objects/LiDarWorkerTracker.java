@@ -21,9 +21,24 @@ public class LiDarWorkerTracker {
         this.lastTrackedObjects = new LinkedList<>();
         this.lidars_data_path = lidars_data_path;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getFrequency() {
+        return frequency;
+    }
+
     public String toString(){
         return "ID: "+id+", frequency: "+frequency+", status: "+status + " dataPath: "+lidars_data_path +" LastTrackedObjects: "+lastTrackedObjects;
     }
+/**
+    public CloudPoint getObjectLocation(String id){
+        LiDarDataBase.getInstance(lidars_data_path);
+        return "fff";
+
+    }*/
 
     public String getPath(){
         return lidars_data_path;

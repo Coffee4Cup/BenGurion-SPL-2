@@ -3,6 +3,7 @@ package bgu.spl.mics;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 
 import java.util.LinkedList;
 
@@ -94,6 +95,7 @@ class TestMicroService {
         Thread testThread1 = new Thread(microService);
         testThread1.start();
         Future<String> future = microService.sendEvent(dummyEvent);
+        microService.sendBroadcast(new TerminatedBroadcast());
         try{
             testThread1.join();
         } catch (InterruptedException e) {
@@ -148,8 +150,8 @@ class TestMicroService {
             t.start();
         }
         try{
-            Thread.sleep(1000);
-            for(int i=1;i<=10;i++){
+            //Thread.sleep(1000);
+            for(int i=1;i<=100;i++){
                 futures.add(microService.sendEvent(dummyEvent));
             }
             microService.sendBroadcast(new TerminatedBroadcast());
@@ -187,6 +189,7 @@ class TestMicroService {
 
     @Test
     void initialize() {
+
     }
 
     @Test

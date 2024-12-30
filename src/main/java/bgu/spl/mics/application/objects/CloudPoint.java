@@ -7,11 +7,20 @@ package bgu.spl.mics.application.objects;
 public class CloudPoint {
 	private Double x;
 	private Double y;
+
+	public CloudPoint(Double x, Double y) {
+		this.x = x;
+		this.y = y;
+	}
 	
 	public Double x() {
 		return x;
 	}
 	public Double y() {
 		return y;
+	}
+
+	public String toString(){
+		return "("+x+","+y+")";
 	}
 }

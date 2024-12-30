@@ -24,6 +24,10 @@ public class StampedDetectedObjects {
         return time;
     }
 
+    public int getNumOfDetectedObjects() {
+        return detectedObjects.size();
+    }
+
     public LinkedList<DetectedObject> getDetectedObjects() {
         return detectedObjects;
     }

@@ -14,6 +14,7 @@ public class Camera {
     private int frequency;
     private STATUS status;
     private int numOfDetectedObjects;
+    private final Object lock;
 
     private HashMap<Integer, StampedDetectedObjects> detectedObjectList; //might get changed
 
@@ -21,7 +22,9 @@ public class Camera {
         this.id = id;
         this.frequency = frequency;
         this.status = status;
+        lock = new Object();
         numOfDetectedObjects = 0;
+        detectedObjectList = new HashMap<>();
         for(StampedDetectedObjects sto: stampedDetectedObjects) {
             detectedObjectList.put(sto.getTime(), sto);
         }
@@ -32,12 +35,16 @@ public class Camera {
     }
 
 
-    public void objectDetected(){
-        numOfDetectedObjects++;
+    public void objecstDetected(int amount){
+        synchronized (lock){
+            numOfDetectedObjects+=amount;
+        }
     }
 
     public int getNumOfDetectedObjects() {
-        return numOfDetectedObjects;
+        synchronized (lock){
+            return numOfDetectedObjects;
+        }
     }
 
 

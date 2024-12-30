@@ -1,7 +1,13 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.PoseEvent;
 import bgu.spl.mics.application.objects.FusionSlam;
+import bgu.spl.mics.application.objects.StatisticalFolder;
+
+import bgu.spl.mics.application.messages.TerminatedBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 
 /**
  * FusionSlamService integrates data from multiple sensors to build and update
@@ -11,14 +17,18 @@ import bgu.spl.mics.application.objects.FusionSlam;
  * transforming and updating the map with new landmarks.
  */
 public class FusionSlamService extends MicroService {
+
+    private final StatisticalFolder statisticalFolder;
+    private final FusionSlam fusion;
     /**
      * Constructor for FusionSlamService.
      *
      * @param fusionSlam The FusionSLAM object responsible for managing the global map.
      */
-    public FusionSlamService(FusionSlam fusionSlam) {
+    public FusionSlamService(FusionSlam fusionSlam, StatisticalFolder statisticalFolder) {
         super("Change_This_Name");
-        // TODO Implement this
+        this.statisticalFolder = statisticalFolder;
+        this.fusion = fusionSlam;
     }
 
     /**
@@ -28,6 +38,19 @@ public class FusionSlamService extends MicroService {
      */
     @Override
     protected void initialize() {
-        // TODO Implement this
+        subscribeEvent(TrackedObjectsEvent.class, e-> {
+            statisticalFolder.addTrackedObjects(1);
+        });
+
+        subscribeEvent(PoseEvent.class, e-> {
+            fusion.addPose(e.getFuture().get());
+        });
+     /**   subscribeBroadcast(TickBroadcast.class, t-> {
+            fusion.updateMap();
+        });*/
+        subscribeBroadcast(TerminatedBroadcast.class, t-> {
+            terminate();
+            System.out.println("Terminated FusionSlamService");
+        });
     }
 }

@@ -147,12 +147,9 @@ public class MessageBusImpl implements MessageBus {
 	@Override
 	public void register(MicroService m) {
 		System.out.println(m.getName() + " registered");
-
 		synchronized(bus){
-			bus.put(m, new LinkedBlockingQueue<Message>());			//when do i sub?
+			bus.put(m, new LinkedBlockingQueue<Message>());			//when do i sub? NOW!
 		}
-
-
 	}
 
 	@Override

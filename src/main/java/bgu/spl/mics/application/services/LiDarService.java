@@ -1,12 +1,16 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Future;
+import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.DetectedObjectEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
-import bgu.spl.mics.application.objects.DetectedObject;
-import bgu.spl.mics.application.objects.LiDarDataBase;
-import bgu.spl.mics.application.objects.LiDarWorkerTracker;
+import bgu.spl.mics.application.messages.TrackedObjectsEvent;
+import bgu.spl.mics.application.objects.*;
+
+import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * LiDarService is responsible for processing data from the LiDAR sensor and
@@ -17,15 +21,23 @@ import bgu.spl.mics.application.objects.LiDarWorkerTracker;
  * observations.
  */
 public class LiDarService extends MicroService {
+    private final StatisticalFolder statisticalFolder;
     private LiDarWorkerTracker liDarWorkerTracker;
+    private LinkedList<StampedDetectedObjects> jobList;
+    private LinkedList<Future<Boolean>> detectionHistory;
+    private int currentTick;
     /**
      * Constructor for LiDarService.
      *
      * @param LiDarWorkerTracker A LiDAR Tracker worker object that this service will use to process data.
      */
-    public LiDarService(LiDarWorkerTracker LiDarWorkerTracker) {
+    public LiDarService(LiDarWorkerTracker LiDarWorkerTracker, StatisticalFolder statisticalFolder) {
         super("Lidar Service");
+        this.statisticalFolder = statisticalFolder;
+        currentTick = 0;
         this.liDarWorkerTracker = LiDarWorkerTracker;
+        jobList = new LinkedList<>();
+        detectionHistory = new LinkedList<>();
     }
 
     /**
@@ -36,15 +48,28 @@ public class LiDarService extends MicroService {
     @Override
     protected void initialize() {
         subscribeEvent(DetectedObjectEvent.class, e-> {
-
-
-
+            jobList.add(e.getStampedDetectedObjects());
+            if(!jobList.isEmpty() && jobList.getFirst().getTime() >= currentTick + liDarWorkerTracker.getFrequency() ){
+                StampedDetectedObjects sdo = jobList.removeFirst();
+                System.out.println("Lidar working on job "+sdo.getTime()+" at "+currentTick);
+                LinkedList<DetectedObject> doList = sdo.getDetectedObjects();
+                MessageBusImpl.getInstance().complete(e, true);
+                for(DetectedObject d : doList){
+                    StampedCloudPoints scp = LiDarDataBase.getInstance(liDarWorkerTracker.getPath()).getStampedCloudPoints(d.id());
+                    System.out.println("found scp: "+scp);
+                    TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
+                    Future<Boolean> f = sendEvent(new TrackedObjectsEvent(to));
+                    statisticalFolder.addTrackedObjects(1);
+                    detectionHistory.add(f);
+                }
+            }
         });
         subscribeBroadcast(TickBroadcast.class, t-> {
+            currentTick = t.getTick();
 
         });
         subscribeBroadcast(TerminatedBroadcast.class, t-> {
-
+            terminate();
         });
     }
 }

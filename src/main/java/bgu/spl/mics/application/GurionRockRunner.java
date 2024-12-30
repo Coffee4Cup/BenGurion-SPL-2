@@ -4,6 +4,7 @@ import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.CameraService;
+import bgu.spl.mics.application.services.LiDarService;
 import bgu.spl.mics.application.services.TimeService;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -119,13 +120,17 @@ public class GurionRockRunner {
             Type poseListType = new TypeToken<LinkedList<Pose>>() {}.getType();
             GPSIMU gpsimu = new GPSIMU(gson.fromJson(configReader, poseListType));
             System.out.println(gpsimu +" \ntick:" + config.TickTime + " duration:" + config.Duration);
-            MicroService m1, m2;
-            m1 = new CameraService(myCameras.getFirst());
+            MicroService m1, m2, m3;
+            StatisticalFolder statisticalFolder = new StatisticalFolder();
+            m1 = new CameraService(myCameras.getFirst(), statisticalFolder);
             m2 = new TimeService(config.TickTime, config.Duration);
+            m3 = new LiDarService(myLidars.getFirst(), statisticalFolder);
             Thread t1 = new Thread(m1);
             Thread t2 = new Thread(m2);
+            Thread t3 = new Thread(m3);
             t1.start();
             t2.start();
+            t3.start();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

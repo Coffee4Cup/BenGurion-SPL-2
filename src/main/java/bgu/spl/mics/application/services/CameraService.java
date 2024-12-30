@@ -9,6 +9,7 @@ import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
+import bgu.spl.mics.application.objects.StatisticalFolder;
 
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
@@ -21,16 +22,18 @@ import java.util.concurrent.TimeUnit;
  * the system's StatisticalFolder upon sending its observations.
  */
 public class CameraService extends MicroService {
-    private Camera camera;
+    private final StatisticalFolder statisticalFolder;
+    private final Camera camera;
     private LinkedList<Future<Boolean>> detectionHistory;
     /**
      * Constructor for CameraService.
      *
      * @param camera The Camera object that this service will use to detect objects.
      */
-    public CameraService(Camera camera) {
+    public CameraService(Camera camera, StatisticalFolder statisticalFolder) {
         super("camera");
         this.camera = camera;
+        this.statisticalFolder = statisticalFolder;
         detectionHistory = new LinkedList<>();
     }
 
@@ -43,18 +46,15 @@ public class CameraService extends MicroService {
     protected void initialize() {
         System.out.println("Initializing CameraService");
         subscribeBroadcast(TickBroadcast.class, t -> {
-            StampedDetectedObjects sdo = camera.getDetectedObjectList(t.getTick());
-            for(DetectedObject d  : sdo.getDetectedObjects()) {
-                detectionHistory.add(sendEvent(new DetectedObjectEvent( d )));
+            StampedDetectedObjects sdo = camera.getDetectedObjectList(t.getTick() - camera.getFrequency());
+            if(sdo != null){
+                statisticalFolder.addDetectedObjects(sdo.getNumOfDetectedObjects());
+                Future<Boolean> f = sendEvent(new DetectedObjectEvent(sdo));
+                detectionHistory.add(f);
             }
         });
         subscribeBroadcast(TerminatedBroadcast.class, t -> {
-            for(Future<Boolean> f : detectionHistory) {
-                if(f.get(10, TimeUnit.MILLISECONDS) != null){
-                    if(f.get())
-                        camera.objectDetected();
-                }
-            }
+
             terminate();
             System.out.println("Terminated CameraService, score is "+ camera.getNumOfDetectedObjects());
         });
