@@ -12,8 +12,7 @@ public class MessageBusImpl implements MessageBus {
 		private static final MessageBusImpl instance = new MessageBusImpl();
 	}
 
-	public static MessageBus getInstance() {
-		return MessageBusHolder.instance;
+	public MessageBusImpl() {
 	}
 
 	@Override

@@ -1,24 +1,23 @@
-import bgu.spl.mics.*;
+package bgu.spl.mics;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Dummy implementation of {@link MessageBus} for testing purposes.
  */
 
 public class MessageBusTestImpl implements MessageBus {
-    ArrayList<ArrayList<MicroService>> eventSubscriptions;
-    ArrayList<ArrayList<MicroService>> broadcastSubscriptions;
-    ArrayList<ArrayList<Event>> eventSubs;
+
+
+    private ArrayList<MicroService> ArrayDummyBroadcast;
 
     private static class MessageBusHolder{
         private static final MessageBusTestImpl instance = new MessageBusTestImpl();
     }
 
-    private MessageBusTestImpl() {
-        this.eventSubscriptions = new ArrayList<>();
-        this.broadcastSubscriptions = new ArrayList<>();
-        this.eventSubs = new ArrayList<>();
+    public MessageBusTestImpl() {
+        ArrayDummyBroadcast = new ArrayList<>();
     }
 
     public static MessageBus getInstance() {
@@ -28,11 +27,12 @@ public class MessageBusTestImpl implements MessageBus {
     @Override
     public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
 
+
     }
 
     @Override
     public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-
+        ArrayDummyBroadcast.add(m);
     }
 
     @Override
@@ -42,7 +42,11 @@ public class MessageBusTestImpl implements MessageBus {
 
     @Override
     public void sendBroadcast(Broadcast b) {
-
+        for (MicroService m : ArrayDummyBroadcast) {
+            synchronized (m) {
+                m.notifyAll();
+            }
+        }
     }
 
     @Override
@@ -52,6 +56,7 @@ public class MessageBusTestImpl implements MessageBus {
 
     @Override
     public void register(MicroService m) {
+        System.out.println("registering " + m.getName());
 
     }
 
@@ -62,6 +67,9 @@ public class MessageBusTestImpl implements MessageBus {
 
     @Override
     public Message awaitMessage(MicroService m) throws InterruptedException {
+        synchronized (m) {
+            m.wait();
+        }
         return null;
     }
 }

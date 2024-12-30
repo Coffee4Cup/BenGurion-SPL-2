@@ -1,7 +1,7 @@
 package bgu.spl.mics;
 
-import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.ArrayList;
+import java.util.HashMap;
 /**
  * The MicroService is an abstract class that any micro-service in the system
  * must extend. The abstract MicroService class is responsible to get and
@@ -24,11 +24,12 @@ public abstract class MicroService implements Runnable {
 
     private boolean terminated = false;
     private final String name;
-    private MessageBus messageBus = MessageBusImpl.getInstance();
+    private final MessageBus messageBus = MessageBusSingleton.getInstance();
 
     private Object resultFromHandleEvent;//@TODO: The problem that call returns void, so how can I get the result from the callback?
 
-    private ConcurrentHashMap<Class<? extends Event>, Callback> eventCallbackMap;
+    private HashMap<Class<? extends Message>, Callback> callBackMap;
+    private ArrayList<Message> queueReceivedMessages;
 
     /**
      * @param name the micro-service name (used mainly for debugging purposes -
@@ -36,7 +37,8 @@ public abstract class MicroService implements Runnable {
      */
     public MicroService(String name) {
         this.name = name;
-        eventCallbackMap = new ConcurrentHashMap<>();
+        callBackMap = new HashMap<>();
+        queueReceivedMessages = new ArrayList<>();
     }
 
     /**
@@ -101,8 +103,7 @@ public abstract class MicroService implements Runnable {
      * 	       			null in case no micro-service has subscribed to {@code e.getClass()}.
      */
     protected final <T> Future<T> sendEvent(Event<T> e) {
-        Future future = messageBus.sendEvent(e);
-        return future;
+        return messageBus.sendEvent(e);
     }
 
     /**
@@ -160,28 +161,32 @@ public abstract class MicroService implements Runnable {
         initialize();
         while (!terminated) {
             try {
-                message = messageBus.awaitMessage(this);
+
+                message = getNextMessage(this);
+
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            if(message instanceof Event){
-                handleEvent((Event) message); //@TODO: is there a way to use generics here?
-                complete((Event) message, resultFromHandleEvent);
-                resultFromHandleEvent = null;//@NOTE: might cause problems
-            }
-            else if(message instanceof Broadcast){
-                handleBroadcast((Broadcast) message);
-            }
+            handleMessage(message);
         }
     }
 
-    private void handleEvent(Event message) {
-        Callback callback = eventCallbackMap.get(message.getClass());
+    private final Message getNextMessage(MicroService microService) throws InterruptedException {
+        Message message;
+        synchronized (queueReceivedMessages) {
+            while (queueReceivedMessages.isEmpty()) {
+                message = messageBus.awaitMessage(microService);
+                queueReceivedMessages.add(message);
+            }
+        }
+        return queueReceivedMessages.remove(0);
+    }
+
+    private void handleMessage(Message message) {
+        Callback callback = callBackMap.get(message.getClass());
         callback.call(message);//initialize the resultFromHandleEvent
     }
 
-    private void handleBroadcast(Broadcast message) {
-       //@TODO: implement this.
-    }
+
 
 }
