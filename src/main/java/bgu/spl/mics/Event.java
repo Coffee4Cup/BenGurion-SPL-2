@@ -9,11 +9,4 @@ package bgu.spl.mics;
  */
 public interface Event<T> extends Message {
 
-	/**
-	 * 
-	 * @return Future<T> container
-	 */
-	public Future<T> getFuture();
 }
-
-

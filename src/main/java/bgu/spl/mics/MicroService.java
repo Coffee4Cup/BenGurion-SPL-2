@@ -1,7 +1,5 @@
 package bgu.spl.mics;
 
-import java.util.HashMap;
-
 /**
  * The MicroService is an abstract class that any micro-service in the system
  * must extend. The abstract MicroService class is responsible to get and
@@ -21,10 +19,9 @@ import java.util.HashMap;
  * <p>
  */
 public abstract class MicroService implements Runnable {
+
     private boolean terminated = false;
     private final String name;
-    private  HashMap<Class<? extends Event<?>>, Callback<? extends Event<?>>> eventCallbacks;
-    private  HashMap<Class<? extends Broadcast>, Callback<? extends Broadcast>> broadcastCallbacks;
 
     /**
      * @param name the micro-service name (used mainly for debugging purposes -
@@ -32,8 +29,6 @@ public abstract class MicroService implements Runnable {
      */
     public MicroService(String name) {
         this.name = name;
-        this.eventCallbacks = new HashMap<>();
-        this.broadcastCallbacks = new HashMap<>();
     }
 
     /**
@@ -58,8 +53,7 @@ public abstract class MicroService implements Runnable {
      *                 queue.
      */
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
-        MessageBusImpl.getInstance().subscribeEvent(type, this);
-        eventCallbacks.put(type, callback);
+        //TODO: implement this.
     }
 
     /**
@@ -83,8 +77,7 @@ public abstract class MicroService implements Runnable {
      *                 queue.
      */
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
-        MessageBusImpl.getInstance().subscribeBroadcast(type, this);
-        broadcastCallbacks.put(type, callback);
+        //TODO: implement this.
     }
 
     /**
@@ -100,7 +93,8 @@ public abstract class MicroService implements Runnable {
      * 	       			null in case no micro-service has subscribed to {@code e.getClass()}.
      */
     protected final <T> Future<T> sendEvent(Event<T> e) {
-        return MessageBusImpl.getInstance().sendEvent(e);
+        //TODO: implement this.
+        return null; //TODO: delete this line :)
     }
 
     /**
@@ -110,7 +104,7 @@ public abstract class MicroService implements Runnable {
      * @param b The broadcast message to send
      */
     protected final void sendBroadcast(Broadcast b) {
-        MessageBusImpl.getInstance().sendBroadcast(b);
+        //TODO: implement this.
     }
 
     /**
@@ -124,7 +118,7 @@ public abstract class MicroService implements Runnable {
      *               {@code e}.
      */
     protected final <T> void complete(Event<T> e, T result) {
-        MessageBusImpl.getInstance().complete(e, result);
+        //TODO: implement this.
     }
 
     /**
@@ -154,32 +148,10 @@ public abstract class MicroService implements Runnable {
      */
     @Override
     public final void run() {
-        MessageBusImpl.getInstance().register(this);
         initialize();
-        Message message;
-        try {
-            while (!terminated) {
-                message = MessageBusImpl.getInstance().awaitMessage(this);
-                System.out.println(name + " received " + message.getClass().getSimpleName());
-                if (broadcastCallbacks.containsKey(message.getClass())) {
-                    ((Callback<Broadcast>) broadcastCallbacks.get(message.getClass())).call((Broadcast)message);
-                } else if (eventCallbacks.containsKey(message.getClass()))
-                    ((Callback<Event<?>>) eventCallbacks.get(message.getClass())).call( (Event<?>)message);
-            }
-        }catch (InterruptedException e) {
-                System.out.println("MicroService interrupted");
+        while (!terminated) {
+            System.out.println("NOT IMPLEMENTED!!!"); //TODO: you should delete this line :)
         }
-        System.out.println("MicroService "+name+" terminated");
-    }
-
-    /**
-     * Getters used ONLY for tests
-     */
-    public final int getEventSubSize(){
-        return eventCallbacks.size();
-    }
-    public final int getBroadcastSubSize(){
-        return broadcastCallbacks.size();
     }
 
 }
