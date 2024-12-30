@@ -40,7 +40,7 @@ public class StatisticalFolder {
         }
     }
 
-    public void addLandmarks(int amount){
+    public void addLandMarks(int amount){
         synchronized (lockNL){
             numLandmarks+=amount;
         }

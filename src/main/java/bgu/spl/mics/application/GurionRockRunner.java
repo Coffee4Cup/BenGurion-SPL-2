@@ -3,9 +3,7 @@ package bgu.spl.mics.application;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.*;
-import bgu.spl.mics.application.services.CameraService;
-import bgu.spl.mics.application.services.LiDarService;
-import bgu.spl.mics.application.services.TimeService;
+import bgu.spl.mics.application.services.*;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -120,17 +118,23 @@ public class GurionRockRunner {
             Type poseListType = new TypeToken<LinkedList<Pose>>() {}.getType();
             GPSIMU gpsimu = new GPSIMU(gson.fromJson(configReader, poseListType));
             System.out.println(gpsimu +" \ntick:" + config.TickTime + " duration:" + config.Duration);
-            MicroService m1, m2, m3;
+            MicroService m1, m2, m3, m4, m5;
             StatisticalFolder statisticalFolder = new StatisticalFolder();
             m1 = new CameraService(myCameras.getFirst(), statisticalFolder);
             m2 = new TimeService(config.TickTime, config.Duration);
             m3 = new LiDarService(myLidars.getFirst(), statisticalFolder);
+            m4 = new FusionSlamService(FusionSlam.getInstance(statisticalFolder), statisticalFolder);
+            m5 = new PoseService(gpsimu);
             Thread t1 = new Thread(m1);
             Thread t2 = new Thread(m2);
             Thread t3 = new Thread(m3);
+            Thread t4 = new Thread(m4);
+            Thread t5 = new Thread(m5);
             t1.start();
             t2.start();
             t3.start();
+            t4.start();
+            t5.start();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

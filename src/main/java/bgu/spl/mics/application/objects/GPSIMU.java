@@ -11,7 +11,6 @@ public class GPSIMU {
     private int currentTick;
     private STATUS status;
     private HashMap<Integer, Pose> poseMap;
-    private Pose currentPose;
 
     public GPSIMU(LinkedList<Pose> poseList) {
         poseMap = new HashMap<>();

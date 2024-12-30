@@ -1,5 +1,6 @@
 package bgu.spl.mics.application.objects;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -9,8 +10,9 @@ import java.util.LinkedList;
  */
 public class FusionSlam {
     private final LinkedList<Pose> poseList;
-    private final LinkedList<LandMark> landMarkLinkedList;
+    private final HashMap<String, LandMark> landMarkLinkedList;
     private StatisticalFolder statisticalFolder;
+    private Pose currentPose;
 
     // Singleton instance holder
     private static class FusionSlamHolder {
@@ -20,7 +22,7 @@ public class FusionSlam {
 
     private FusionSlam(StatisticalFolder statisticalFolder) {
         poseList = new LinkedList<>();
-        landMarkLinkedList = new LinkedList<>();
+        landMarkLinkedList = new HashMap<>();
         this.statisticalFolder = statisticalFolder;
     }
 
@@ -33,15 +35,42 @@ public class FusionSlam {
         }
     }
 
-    public void addPose(Pose pose) {
+    public void setPose(Pose pose) {
         synchronized (poseList) {
             poseList.add(pose);
+            currentPose = pose;
         }
+    }
+
+    public Pose getCurrentPose() {
+        return currentPose;
     }
 
     public void addLandMark(LandMark landMark) {
         synchronized (landMarkLinkedList) {
-            landMarkLinkedList.add(landMark);
+            landMarkLinkedList.put(landMark.getId(), landMark);
         }
     }
+
+    public boolean isLandMarkExist(String id){
+        synchronized (landMarkLinkedList) {
+            return landMarkLinkedList.containsKey(id);
+        }
+    }
+
+    public boolean updateMap(LandMark landMark) {
+        synchronized (landMarkLinkedList) {
+            if(!landMarkLinkedList.containsKey(landMark.getId())){
+                landMarkLinkedList.put(landMark.getId(), landMark);
+                System.out.println("fslm added new Landmark: "+landMark);
+                return true;
+            }
+            else{
+                LandMark old = landMarkLinkedList.get(landMark.getId());
+                System.out.println("fslm updated old Landmark: "+landMark);
+                return false;
+            }
+        }
+    }
+
 }

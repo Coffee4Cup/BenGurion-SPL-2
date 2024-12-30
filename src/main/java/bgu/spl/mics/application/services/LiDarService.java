@@ -32,7 +32,7 @@ public class LiDarService extends MicroService {
      * @param LiDarWorkerTracker A LiDAR Tracker worker object that this service will use to process data.
      */
     public LiDarService(LiDarWorkerTracker LiDarWorkerTracker, StatisticalFolder statisticalFolder) {
-        super("Lidar Service");
+        super("LidarService");
         this.statisticalFolder = statisticalFolder;
         currentTick = 0;
         this.liDarWorkerTracker = LiDarWorkerTracker;
@@ -54,14 +54,18 @@ public class LiDarService extends MicroService {
                 System.out.println("Lidar working on job "+sdo.getTime()+" at "+currentTick);
                 LinkedList<DetectedObject> doList = sdo.getDetectedObjects();
                 MessageBusImpl.getInstance().complete(e, true);
+                LinkedList<TrackedObject> toList = new LinkedList<>();
                 for(DetectedObject d : doList){
                     StampedCloudPoints scp = LiDarDataBase.getInstance(liDarWorkerTracker.getPath()).getStampedCloudPoints(d.id());
-                    System.out.println("found scp: "+scp);
-                    TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
-                    Future<Boolean> f = sendEvent(new TrackedObjectsEvent(to));
-                    statisticalFolder.addTrackedObjects(1);
-                    detectionHistory.add(f);
+                    if (scp != null) {
+                        TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
+                        System.out.println("found scp: " + scp);
+                        toList.add(to);
+                    }
                 }
+                Future<Boolean> f = sendEvent(new TrackedObjectsEvent(toList));
+                statisticalFolder.addTrackedObjects(1);
+                detectionHistory.add(f);
             }
         });
         subscribeBroadcast(TickBroadcast.class, t-> {

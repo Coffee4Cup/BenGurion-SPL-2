@@ -23,4 +23,9 @@ public class CloudPoint {
 	public String toString(){
 		return "("+x+","+y+")";
 	}
+
+	public void update(CloudPoint other){
+		this.x = (other.x + this.x ) / 2;
+		this.y = (other.y + this.y ) / 2;
+	}
 }

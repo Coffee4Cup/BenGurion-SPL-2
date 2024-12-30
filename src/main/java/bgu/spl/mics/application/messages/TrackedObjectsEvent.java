@@ -5,21 +5,23 @@ import bgu.spl.mics.Future;
 import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.TrackedObject;
 
+import java.util.LinkedList;
+
 public class TrackedObjectsEvent implements Event<Boolean> {
     private Future<Boolean> answer;
-    private TrackedObject trackedObject;
+    private LinkedList<TrackedObject> trackedObjects;
 
-    public TrackedObjectsEvent(TrackedObject trackedObject) {
+    public TrackedObjectsEvent(LinkedList<TrackedObject> trackedObjects) {
         answer = new Future<>();
-        this.trackedObject = trackedObject;
+        this.trackedObjects = trackedObjects;
     }
 
-    public TrackedObject getTrackedObject() {
-        return trackedObject;
+    public LinkedList<TrackedObject> getTrackedObjects() {
+        return trackedObjects;
     }
 
     @Override
     public Future<Boolean> getFuture() {
-        return null;
+        return answer;
     }
 }
