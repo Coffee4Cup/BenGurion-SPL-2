@@ -7,7 +7,7 @@ import bgu.spl.mics.MicroService;
 import bgu.spl.mics.example.messages.ExampleBroadcast;
 import bgu.spl.mics.example.messages.ExampleEvent;
 
-public class ExampleMessageSenderService extends MicroService {
+public class  ExampleMessageSenderService extends MicroService {
 
     private boolean broadcast;
 
