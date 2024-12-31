@@ -5,11 +5,10 @@ example_input_2/*
 .project
 .idea
 target/*
-src/main/java/bgu/spl/mics/example/*
+./src/main/java/bgu/spl/mics/example/*
 camera_data.json
 configuration_file.json
 lidar_data.json
 output.json
 pose_data.json
-
 
