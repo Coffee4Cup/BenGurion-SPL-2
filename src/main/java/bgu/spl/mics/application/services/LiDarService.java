@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
  * observations.
  */
 public class LiDarService extends MicroService {
-    private final StatisticalFolder statisticalFolder;
     private LiDarWorkerTracker liDarWorkerTracker;
     private LinkedList<StampedDetectedObjects> jobList;
     private LinkedList<Future<Boolean>> detectionHistory;
@@ -31,9 +30,8 @@ public class LiDarService extends MicroService {
      *
      * @param LiDarWorkerTracker A LiDAR Tracker worker object that this service will use to process data.
      */
-    public LiDarService(LiDarWorkerTracker LiDarWorkerTracker, StatisticalFolder statisticalFolder) {
+    public LiDarService(LiDarWorkerTracker LiDarWorkerTracker) {
         super("LidarService");
-        this.statisticalFolder = statisticalFolder;
         currentTick = 0;
         this.liDarWorkerTracker = LiDarWorkerTracker;
         jobList = new LinkedList<>();
@@ -56,7 +54,7 @@ public class LiDarService extends MicroService {
                 MessageBusImpl.getInstance().complete(e, true);
                 LinkedList<TrackedObject> toList = new LinkedList<>();
                 for(DetectedObject d : doList){
-                    StampedCloudPoints scp = LiDarDataBase.getInstance(liDarWorkerTracker.getPath()).getStampedCloudPoints(d.id());
+                    StampedCloudPoints scp = LiDarDataBase.getInstance(liDarWorkerTracker.getPath()).getStampedCloudPoints(sdo.getTime()+d.id());
                     if (scp != null) {
                         TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
                         System.out.println("found scp: " + scp);
@@ -64,7 +62,7 @@ public class LiDarService extends MicroService {
                     }
                 }
                 Future<Boolean> f = sendEvent(new TrackedObjectsEvent(toList));
-                statisticalFolder.addTrackedObjects(1);
+                liDarWorkerTracker.addTrackedObjects(toList.size());
                 detectionHistory.add(f);
             }
         });

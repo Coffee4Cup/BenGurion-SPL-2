@@ -13,17 +13,23 @@ public class LiDarWorkerTracker {
     private STATUS status;
     private String lidars_data_path;
     private LinkedList<TrackedObject> lastTrackedObjects;
+    private final StatisticalFolder statisticalFolder;
 
-    public LiDarWorkerTracker(int id, int frequency, STATUS status, String lidars_data_path) {
+    public LiDarWorkerTracker(int id, int frequency, STATUS status, String lidars_data_path, StatisticalFolder statisticalFolder) {
         this.id = id;
         this.frequency = frequency;
         this.status = status;
         this.lastTrackedObjects = new LinkedList<>();
         this.lidars_data_path = lidars_data_path;
+        this.statisticalFolder = statisticalFolder;
     }
 
     public int getId() {
         return id;
+    }
+
+    public void addTrackedObjects(int amount){
+        statisticalFolder.addTrackedObjects(amount);
     }
 
     public int getFrequency() {

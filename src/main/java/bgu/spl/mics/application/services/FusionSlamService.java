@@ -19,7 +19,6 @@ import java.util.LinkedList;
  */
 public class FusionSlamService extends MicroService {
 
-    private final StatisticalFolder statisticalFolder;
     private final FusionSlam fusion;
 
     /**
@@ -27,9 +26,8 @@ public class FusionSlamService extends MicroService {
      *
      * @param fusionSlam The FusionSLAM object responsible for managing the global map.
      */
-    public FusionSlamService(FusionSlam fusionSlam, StatisticalFolder statisticalFolder) {
+    public FusionSlamService(FusionSlam fusionSlam) {
         super("fusionSlamService");
-        this.statisticalFolder = statisticalFolder;
         this.fusion = fusionSlam;
     }
 
@@ -41,34 +39,37 @@ public class FusionSlamService extends MicroService {
     @Override
     protected void initialize() {
         subscribeEvent(TrackedObjectsEvent.class, e-> {
-            statisticalFolder.addTrackedObjects(1);
-            Pose currentPose = fusion.getCurrentPose();
             for(TrackedObject to : e.getTrackedObjects()){
+                Pose currentPose = fusion.getPose(to.getTime());
+                System.out.print("CurrentPose: "+currentPose);
                 LinkedList<CloudPoint> localCloudPoints = to.getCoordinates();
                 //Calculating landmarks in global coordinates
-                float yawRad = currentPose.getYaw() * (float) Math.PI / 180;
+                float yawRad = ( currentPose.getYaw() * (float) Math.PI ) / 180;
                 float cosRad = (float) Math.cos(yawRad);
                 float sinRad = (float) Math.sin(yawRad);
                 CloudPoint local1 = localCloudPoints.get(0);
                 CloudPoint local2 = localCloudPoints.get(1);
+                System.out.println("yaw: "+yawRad+" cos: "+cosRad+" sin: "+sinRad+" local1: "+local1+" local2: "+local2);
                 CloudPoint global1 = new CloudPoint(
-                        currentPose.getX() + local1.x() * cosRad - local1.y() * sinRad,
-                        currentPose.getY() + local1.x() * sinRad + local1.y() * cosRad);
+                        currentPose.getX() + ((local1.x() * cosRad ) - (local1.y() * sinRad)),
+                        currentPose.getY() + ((local1.x() * sinRad ) + (local1.y() * cosRad)));
                 CloudPoint global2 = new CloudPoint(
-                        currentPose.getX() + local2.x() * cosRad - local2.y() * sinRad,
-                        currentPose.getY() + local2.x() * sinRad + local2.y() * cosRad);
+                        currentPose.getX() + ((local2.x() * cosRad) - (local2.y() * sinRad)),
+                        currentPose.getY() + ((local2.x() * sinRad) + (local2.y() * cosRad)));
+                System.out.println("global1: "+global1+" global2: "+global2);
                 //fusion.updateMap returns true if new landmark, else false
                 //if previously detected, updates coordinates to averages
                 if(fusion.updateMap(new LandMark(to.getId(), to.getDescription(), global1, global2)))
-                    statisticalFolder.addLandMarks(1);
+                    fusion.addLandMarks(1);
             }
         });
 
         subscribeEvent(PoseEvent.class, e-> {
-            fusion.setPose(e.getFuture().get());
+            fusion.setPose(e.getPose());
         });
         subscribeBroadcast(TerminatedBroadcast.class, t-> {
             terminate();
+            fusion.finish();
             System.out.println("Terminated FusionSlamService");
         });
     }

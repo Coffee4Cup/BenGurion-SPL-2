@@ -22,7 +22,7 @@ public class LiDarDataBase {
     private LiDarDataBase(LinkedList<StampedCloudPoints> cloudPoints) {
         this.cloudPoints = new HashMap<>();
         for(StampedCloudPoints scp: cloudPoints){
-            this.cloudPoints.put(scp.getId(), scp);
+            this.cloudPoints.put(scp.getTime() + scp.getId(), scp);
         }
     }
     /**

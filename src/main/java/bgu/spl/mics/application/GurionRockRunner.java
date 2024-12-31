@@ -90,6 +90,7 @@ public class GurionRockRunner {
     public static void main(String[] args) {
         Gson gson = new Gson();
         try {
+            StatisticalFolder statisticalFolder = new StatisticalFolder();
             //Reader from java IO to read config file
             Reader configReader = new FileReader("./configuration_file.json");
             //New class Config with fields corresponding to configuration_file.json
@@ -106,12 +107,12 @@ public class GurionRockRunner {
             //Adding new Camera for each configuration using new class CameraConfig:
             //fields are id, frequency and String camera_key which represents its KEY in Map<String, List<SDO> we created
             for(CameraConfig cfg : config.Cameras.CamerasConfigurations){
-                myCameras.add(new Camera(cfg.id, cfg.frequency,  STATUS.UP, cameraData.get(cfg.camera_key)));
+                myCameras.add(new Camera(cfg.id, cfg.frequency,  STATUS.UP, cameraData.get(cfg.camera_key), statisticalFolder));
             }
             System.out.println(myCameras.getFirst());
             LinkedList<LiDarWorkerTracker> myLidars = new LinkedList<>();
             for(LiDarConfig cfg: config.LidarWorkers.LidarConfigurations){
-                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, STATUS.UP, config.LidarWorkers.lidars_data_path));
+                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, STATUS.UP, config.LidarWorkers.lidars_data_path, statisticalFolder));
             }
             System.out.println(myLidars.getFirst());
             configReader = new FileReader(config.poseJsonFile);
@@ -119,12 +120,12 @@ public class GurionRockRunner {
             GPSIMU gpsimu = new GPSIMU(gson.fromJson(configReader, poseListType));
             System.out.println(gpsimu +" \ntick:" + config.TickTime + " duration:" + config.Duration);
             MicroService m1, m2, m3, m4, m5;
-            StatisticalFolder statisticalFolder = new StatisticalFolder();
-            m1 = new CameraService(myCameras.getFirst(), statisticalFolder);
-            m2 = new TimeService(config.TickTime, config.Duration);
-            m3 = new LiDarService(myLidars.getFirst(), statisticalFolder);
-            m4 = new FusionSlamService(FusionSlam.getInstance(statisticalFolder), statisticalFolder);
-            m5 = new PoseService(gpsimu);
+            //TODO implement threads with executor service. Make sure TimeService runs last!
+            m1 = new CameraService(myCameras.getFirst());
+            m5 = new TimeService(config.TickTime, config.Duration);
+            m3 = new LiDarService(myLidars.getFirst());
+            m4 = new FusionSlamService(FusionSlam.getInstance(statisticalFolder));
+            m2 = new PoseService(gpsimu);
             Thread t1 = new Thread(m1);
             Thread t2 = new Thread(m2);
             Thread t3 = new Thread(m3);
@@ -135,6 +136,21 @@ public class GurionRockRunner {
             t3.start();
             t4.start();
             t5.start();
+            //output.json creation:
+            //TODO implement output.json creation
+            try{
+                t1.join();
+                t2.join();
+                t3.join();
+                t4.join();
+                t5.join();
+
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println(statisticalFolder);
+
+
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

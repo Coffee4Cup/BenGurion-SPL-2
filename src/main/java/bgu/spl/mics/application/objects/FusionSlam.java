@@ -9,10 +9,9 @@ import java.util.LinkedList;
  * Implements the Singleton pattern to ensure a single instance of FusionSlam exists.
  */
 public class FusionSlam {
-    private final LinkedList<Pose> poseList;
+    private final HashMap<Integer, Pose> poseList;
     private final HashMap<String, LandMark> landMarkLinkedList;
     private StatisticalFolder statisticalFolder;
-    private Pose currentPose;
 
     // Singleton instance holder
     private static class FusionSlamHolder {
@@ -21,9 +20,13 @@ public class FusionSlam {
     }
 
     private FusionSlam(StatisticalFolder statisticalFolder) {
-        poseList = new LinkedList<>();
+        poseList = new HashMap<>();
         landMarkLinkedList = new HashMap<>();
         this.statisticalFolder = statisticalFolder;
+    }
+
+    public void addLandMarks(int amount){
+        statisticalFolder.addLandMarks(amount);
     }
 
     public static FusionSlam getInstance(StatisticalFolder statisticalFolder) {
@@ -37,13 +40,17 @@ public class FusionSlam {
 
     public void setPose(Pose pose) {
         synchronized (poseList) {
-            poseList.add(pose);
-            currentPose = pose;
+            poseList.put(pose.getTime(), pose);
         }
     }
 
-    public Pose getCurrentPose() {
-        return currentPose;
+    public Pose getPose(int tick) {
+       synchronized (poseList) {
+           if (!poseList.containsKey(tick)) {
+               return null;
+           }
+           return poseList.get(tick);
+       }
     }
 
     public void addLandMark(LandMark landMark) {
@@ -58,6 +65,10 @@ public class FusionSlam {
         }
     }
 
+    public void finish(){
+        statisticalFolder.setFinalLandMarks(new LinkedList<>(landMarkLinkedList.values()));
+    }
+
     public boolean updateMap(LandMark landMark) {
         synchronized (landMarkLinkedList) {
             if(!landMarkLinkedList.containsKey(landMark.getId())){
@@ -66,8 +77,8 @@ public class FusionSlam {
                 return true;
             }
             else{
-                LandMark old = landMarkLinkedList.get(landMark.getId());
-                System.out.println("fslm updated old Landmark: "+landMark);
+                landMarkLinkedList.get(landMark.getId()).updateCoordinates(landMark);
+                System.out.println("fslm updated old Landmark: "+landMarkLinkedList.get(landMark.getId()));
                 return false;
             }
         }

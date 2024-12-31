@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
  * the system's StatisticalFolder upon sending its observations.
  */
 public class CameraService extends MicroService {
-    private final StatisticalFolder statisticalFolder;
     private final Camera camera;
     private LinkedList<Future<Boolean>> detectionHistory;
     /**
@@ -30,10 +29,9 @@ public class CameraService extends MicroService {
      *
      * @param camera The Camera object that this service will use to detect objects.
      */
-    public CameraService(Camera camera, StatisticalFolder statisticalFolder) {
+    public CameraService(Camera camera) {
         super("cameraService");
         this.camera = camera;
-        this.statisticalFolder = statisticalFolder;
         detectionHistory = new LinkedList<>();
     }
 
@@ -48,7 +46,7 @@ public class CameraService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, t -> {
             StampedDetectedObjects sdo = camera.getDetectedObjectList(t.getTick() - camera.getFrequency());
             if(sdo != null){
-                statisticalFolder.addDetectedObjects(sdo.getNumOfDetectedObjects());
+                camera.objecstDetected(sdo.getNumOfDetectedObjects());
                 Future<Boolean> f = sendEvent(new DetectedObjectEvent(sdo));
                 detectionHistory.add(f);
             }
@@ -56,7 +54,7 @@ public class CameraService extends MicroService {
         subscribeBroadcast(TerminatedBroadcast.class, t -> {
 
             terminate();
-            System.out.println("Terminated CameraService, score is "+ camera.getNumOfDetectedObjects());
+            System.out.println("Terminated CameraService, score is ");
         });
     }
 

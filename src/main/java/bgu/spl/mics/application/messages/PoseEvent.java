@@ -7,10 +7,16 @@ import bgu.spl.mics.application.objects.Pose;
 public class PoseEvent implements Event<Pose> {
 
     private Future<Pose> future;
+    private Pose newPose;
 
     public PoseEvent(Pose pose) {
+        newPose = pose;
         this.future = new Future<>();
         future.resolve(pose);
+    }
+
+    public Pose getPose(){
+        return newPose;
     }
 
     @Override

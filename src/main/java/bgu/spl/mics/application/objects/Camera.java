@@ -13,21 +13,21 @@ public class Camera {
     private int id;
     private int frequency;
     private STATUS status;
-    private int numOfDetectedObjects;
     private final Object lock;
+    private final StatisticalFolder statisticalFolder;
 
     private HashMap<Integer, StampedDetectedObjects> detectedObjectList; //might get changed
 
-    public Camera(int id, int frequency, STATUS status, LinkedList<StampedDetectedObjects> stampedDetectedObjects) {
+    public Camera(int id, int frequency, STATUS status, LinkedList<StampedDetectedObjects> stampedDetectedObjects, StatisticalFolder statisticalFolder) {
         this.id = id;
         this.frequency = frequency;
         this.status = status;
         lock = new Object();
-        numOfDetectedObjects = 0;
         detectedObjectList = new HashMap<>();
         for(StampedDetectedObjects sto: stampedDetectedObjects) {
             detectedObjectList.put(sto.getTime(), sto);
         }
+        this.statisticalFolder = statisticalFolder;
     }
 
     public StampedDetectedObjects  getDetectedObjectList(int time) {
@@ -37,17 +37,9 @@ public class Camera {
 
     public void objecstDetected(int amount){
         synchronized (lock){
-            numOfDetectedObjects+=amount;
+            statisticalFolder.addDetectedObjects(amount);
         }
     }
-
-    public int getNumOfDetectedObjects() {
-        synchronized (lock){
-            return numOfDetectedObjects;
-        }
-    }
-
-
 
 
     public int getId() {return id;}

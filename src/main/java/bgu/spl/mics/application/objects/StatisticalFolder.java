@@ -1,48 +1,74 @@
 package bgu.spl.mics.application.objects;
 
+import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Holds statistical information about the system's operation.
  * This class aggregates metrics such as the runtime of the system,
  * the number of objects detected and tracked, and the number of landmarks identified.
  */
 public class StatisticalFolder {
-    private Integer systemRunTime;
-    private Integer numDetectedObjects;
-    private Integer numTrackedObjects;
-    private Integer numLandmarks;
-    public final Object lockSRT = new Object();
-    public final Object lockNDO = new Object();
-    public final Object lockNTO = new Object();
-    public final Object lockNL = new Object();
+    private final AtomicInteger systemRunTime;
+    private final AtomicInteger numDetectedObjects;
+    private final AtomicInteger numTrackedObjects;
+    private final AtomicInteger numLandmarks;
+
+    private LinkedList<LandMark> landmarks;
 
     public StatisticalFolder(){
-        systemRunTime = 0;
-        numDetectedObjects = 0;
-        numTrackedObjects = 0;
-        numLandmarks = 0;
+        systemRunTime = new AtomicInteger(0);
+        numDetectedObjects = new AtomicInteger(0);
+        numTrackedObjects = new AtomicInteger(0);
+        numLandmarks = new AtomicInteger(0);
     }
 
-    public void setSystemRunTime(Integer systemRunTime){
-        synchronized (lockSRT){
-            this.systemRunTime = systemRunTime;
-        }
+    public void setSystemRunTime(Integer amount){
+        int oldValue;
+        int newValue;
+        do{
+            oldValue = this.systemRunTime.get();
+            newValue = oldValue + amount;
+        }while(!this.systemRunTime.compareAndSet(oldValue, newValue));
+    }
+
+    public void setFinalLandMarks(LinkedList<LandMark> landmarks){
+        this.landmarks = landmarks;
     }
 
     public void addDetectedObjects(int amount){
-        synchronized (lockNDO){
-            numDetectedObjects+=amount;
-        }
+        int oldValue;
+        int newValue;
+        do{
+            oldValue = this.numDetectedObjects.get();
+            newValue = oldValue + amount;
+        }while(!this.numDetectedObjects.compareAndSet(oldValue, newValue));
     }
 
     public void addTrackedObjects(int amount){
-        synchronized (lockNTO){
-            numTrackedObjects+=amount;
-        }
+        int oldValue;
+        int newValue;
+        do{
+            oldValue = this.numTrackedObjects.get();
+            newValue = oldValue + amount;
+        }while(!this.numTrackedObjects.compareAndSet(oldValue, newValue));
     }
 
     public void addLandMarks(int amount){
-        synchronized (lockNL){
-            numLandmarks+=amount;
-        }
+        int oldValue;
+        int newValue;
+        do{
+            oldValue = this.numLandmarks.get();
+            newValue = oldValue + amount;
+        }while(!this.numLandmarks.compareAndSet(oldValue, newValue));
+    }
+
+    public String toString(){
+        String output = "SystemRunTime: "+systemRunTime.get()+
+                " DetectedObjects: "+numDetectedObjects.get()+
+                " TrackedObjects: "+numTrackedObjects.get()+
+                " Landmarks: "+numLandmarks.get();
+        output += "\nLandmarks: "+landmarks;
+        return output;
     }
 }
