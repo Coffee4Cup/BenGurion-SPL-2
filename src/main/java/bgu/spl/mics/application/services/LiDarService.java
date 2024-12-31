@@ -21,9 +21,9 @@ import java.util.concurrent.TimeUnit;
  * observations.
  */
 public class LiDarService extends MicroService {
-    private LiDarWorkerTracker liDarWorkerTracker;
-    private LinkedList<StampedDetectedObjects> jobList;
-    private LinkedList<Future<Boolean>> detectionHistory;
+    private final LiDarWorkerTracker liDarWorkerTracker;
+    private final LinkedList<StampedDetectedObjects> jobList;
+    private final LinkedList<Future<Boolean>> detectionHistory;
     private int currentTick;
     /**
      * Constructor for LiDarService.
@@ -46,7 +46,8 @@ public class LiDarService extends MicroService {
     @Override
     protected void initialize() {
         subscribeEvent(DetectedObjectEvent.class, e-> {
-            jobList.add(e.getStampedDetectedObjects());
+            if(e.getStampedDetectedObjects() != null)
+                jobList.add(e.getStampedDetectedObjects());
             if(!jobList.isEmpty() && jobList.getFirst().getTime() >= currentTick + liDarWorkerTracker.getFrequency() ){
                 StampedDetectedObjects sdo = jobList.removeFirst();
                 System.out.println("Lidar working on job "+sdo.getTime()+" at "+currentTick);
