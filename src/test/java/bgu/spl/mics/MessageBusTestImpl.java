@@ -1,7 +1,6 @@
 package bgu.spl.mics;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Dummy implementation of {@link MessageBus} for testing purposes.
@@ -10,14 +9,16 @@ import java.util.HashMap;
 public class MessageBusTestImpl implements MessageBus {
 
 
-    private ArrayList<MicroService> ArrayDummyBroadcast;
+    private ArrayList<MicroService> arrayDummyBroadcast;
+    private ArrayList<ArrayList<MicroService>> messageServiceList;
 
     private static class MessageBusHolder{
         private static final MessageBusTestImpl instance = new MessageBusTestImpl();
     }
 
     public MessageBusTestImpl() {
-        ArrayDummyBroadcast = new ArrayList<>();
+        arrayDummyBroadcast = new ArrayList<>();
+        messageServiceList = new ArrayList<ArrayList<MicroService>>();
     }
 
     public static MessageBus getInstance() {
@@ -32,7 +33,7 @@ public class MessageBusTestImpl implements MessageBus {
 
     @Override
     public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-        ArrayDummyBroadcast.add(m);
+        arrayDummyBroadcast.add(m);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class MessageBusTestImpl implements MessageBus {
 
     @Override
     public void sendBroadcast(Broadcast b) {
-        for (MicroService m : ArrayDummyBroadcast) {
+        for (MicroService m : arrayDummyBroadcast) {
             synchronized (m) {
                 m.notifyAll();
             }

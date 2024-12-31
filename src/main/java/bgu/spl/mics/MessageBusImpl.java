@@ -8,9 +8,7 @@ package bgu.spl.mics;
  */
 public class MessageBusImpl implements MessageBus {
 
-	private static class MessageBusHolder{
-		private static final MessageBusImpl instance = new MessageBusImpl();
-	}
+	private int awaitMessageCounter = 0;
 
 	public MessageBusImpl() {
 	}
@@ -37,6 +35,7 @@ public class MessageBusImpl implements MessageBus {
 	public void sendBroadcast(Broadcast b) {
 		// TODO Auto-generated method stub
 
+
 	}
 
 	
@@ -60,7 +59,14 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
-		// TODO Auto-generated method stub
+		awaitMessageCounter++;
+		while(m.getQueue().isEmpty()) {
+			synchronized (m) {
+				m.wait();
+			}
+		awaitMessageCounter--;
+		}
+
 		return null;
 	}
 

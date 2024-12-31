@@ -1,8 +1,12 @@
 package bgu.spl.mics.example;
 
+import bgu.spl.mics.MessageBusImpl;
+import bgu.spl.mics.MessageBusSingleton;
 import bgu.spl.mics.example.services.ExampleBroadcastListenerService;
 import bgu.spl.mics.example.services.ExampleMessageSenderService;
 import bgu.spl.mics.example.services.ExampleEventHandlerService;
+import bgu.spl.mics.example.services.ExampleMessageSenderServiceCreator;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,10 +15,11 @@ import java.util.Scanner;
 public class ExampleManager {
 
     public static void main(String[] args) {
+        MessageBusSingleton.setInstance(new MessageBusImpl());
         Map<String, ServiceCreator> serviceCreators = new HashMap<>();
         serviceCreators.put("ev-handler", ExampleEventHandlerService::new);
         serviceCreators.put("brod-listener", ExampleBroadcastListenerService::new);
-        serviceCreators.put("sender", ExampleMessageSenderService::new);
+        serviceCreators.put("sender", new ExampleMessageSenderServiceCreator());
 
         Scanner sc = new Scanner(System.in);
         boolean quit = false;
@@ -39,7 +44,7 @@ public class ExampleManager {
                                     throw new IllegalArgumentException("unknown service type, supported types: " + serviceCreators.keySet());
                                 }
 
-                                new Thread(creator.create(params[2], Arrays.copyOfRange(params, 3, params.length))).start();
+                                new Thread(creator.create(params[1], Arrays.copyOfRange(params, 2, params.length))).start();
                             } catch (IllegalArgumentException ex) {
                                 System.out.println("Error: " + ex.getMessage());
                             }

@@ -29,7 +29,6 @@ public abstract class MicroService implements Runnable {
     private Object resultFromHandleEvent;//@TODO: The problem that call returns void, so how can I get the result from the callback?
 
     private HashMap<Class<? extends Message>, Callback> callBackMap;
-    private ArrayList<Message> queueReceivedMessages;
 
     /**
      * @param name the micro-service name (used mainly for debugging purposes -
@@ -38,7 +37,6 @@ public abstract class MicroService implements Runnable {
     public MicroService(String name) {
         this.name = name;
         callBackMap = new HashMap<>();
-        queueReceivedMessages = new ArrayList<>();
     }
 
     /**
@@ -87,7 +85,7 @@ public abstract class MicroService implements Runnable {
      *                 queue.
      */
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
-        //TODO: implement this.
+        MessageBusSingleton.getInstance().subscribeBroadcast(type, this);
     }
 
     /**
@@ -162,7 +160,7 @@ public abstract class MicroService implements Runnable {
         while (!terminated) {
             try {
 
-                message = getNextMessage(this);
+                message = MessageBusSingleton.getInstance().awaitMessage(this);
 
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -171,16 +169,7 @@ public abstract class MicroService implements Runnable {
         }
     }
 
-    private final Message getNextMessage(MicroService microService) throws InterruptedException {
-        Message message;
-        synchronized (queueReceivedMessages) {
-            while (queueReceivedMessages.isEmpty()) {
-                message = messageBus.awaitMessage(microService);
-                queueReceivedMessages.add(message);
-            }
-        }
-        return queueReceivedMessages.remove(0);
-    }
+
 
     private void handleMessage(Message message) {
         Callback callback = callBackMap.get(message.getClass());

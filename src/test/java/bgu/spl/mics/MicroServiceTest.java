@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class MicroServiceTest {
     private static final Logger logger = LoggerFactory.getLogger(MicroServiceTest.class);
 
-    MessageBusSingleton messageBusSingleton;
+
     Thread thread;
     MicroService microService;
 
     @BeforeEach
     void setUp() {
-        messageBusSingleton.setInstance(new MessageBusTestImpl());
+        MessageBusSingleton.setInstance(new MessageBusTestImpl());
 
     }
 
@@ -33,7 +33,10 @@ class MicroServiceTest {
                     });
                 }
             };
-            messageBusSingleton.getInstance().register(microService);
+            MessageBusSingleton.getInstance().register(microService);
+        }
+        for(int i = 0; i < 10; i++){
+            MessageBusSingleton.getInstance().sendBroadcast(new DummyBroadcast());
         }
 
     }
