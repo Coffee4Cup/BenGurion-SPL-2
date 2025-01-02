@@ -26,6 +26,7 @@ public class FusionSlam {
 
     public void crash() {
         statisticalFolder.setLastPoses(new LinkedList<>(poseList.values()));
+        statisticalFolder.setFinalLandMarks(new LinkedList<>(landMarkLinkedList.values()));
         interruptClock();
     }
 

@@ -15,6 +15,7 @@ import java.util.LinkedList;
 public class LiDarWorkerTracker {
     private int id;
     private int frequency;
+    private String name;
     private STATUS status;
     private String lidars_data_path;
     private final LinkedList<StampedDetectedObjects> jobList;
@@ -22,9 +23,10 @@ public class LiDarWorkerTracker {
     private final StatisticalFolder statisticalFolder;
     private LiDarService service;
 
-    public LiDarWorkerTracker(int id, int frequency, String lidars_data_path, StatisticalFolder statisticalFolder) {
+    public LiDarWorkerTracker(int id, int frequency, String name, String lidars_data_path, StatisticalFolder statisticalFolder) {
         this.id = id;
         this.frequency = frequency;
+        this.name = name;
         this.status = STATUS.DOWN;
         this.lastTrackedObjects = new LinkedList<>();
         this.lidars_data_path = lidars_data_path;
@@ -72,12 +74,12 @@ public class LiDarWorkerTracker {
 
     public void error(String description){
         setStatus(STATUS.ERROR);
-        statisticalFolder.setErrorDescription(description);
+        statisticalFolder.setErrorDescription(description, name);
         updateLastFrames();
     }
 
     public void updateLastFrames(){
-        statisticalFolder.setTrackedObjects(lastTrackedObjects);
+        statisticalFolder.setTrackedObjects(lastTrackedObjects, name);
     }
 
 

@@ -1,5 +1,11 @@
 package bgu.spl.mics.application.objects;
 
+import com.google.gson.Gson;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,10 +19,12 @@ public class StatisticalFolder {
     private final AtomicInteger numDetectedObjects;
     private final AtomicInteger numTrackedObjects;
     private final AtomicInteger numLandmarks;
-    private LinkedList<DetectedObject> cameraLastFrames;
-    private LinkedList<TrackedObject> lidarLastFrames;
+    private HashMap<String, StampedDetectedObjects> cameraLastFrames;
+    private HashMap<String, LinkedList<TrackedObject>> lidarLastFrames;
     private String errorDescription;
+    private String faultySensor;
     private LinkedList<Pose> lastPoses;
+    private boolean error;
 
     private LinkedList<LandMark> landmarks;
 
@@ -25,9 +33,14 @@ public class StatisticalFolder {
         numDetectedObjects = new AtomicInteger(0);
         numTrackedObjects = new AtomicInteger(0);
         numLandmarks = new AtomicInteger(0);
+        cameraLastFrames = new HashMap<>();
+        lidarLastFrames = new HashMap<>();
+        error = false;
     }
 
-    public void setErrorDescription(String errorDescription){
+    public void setErrorDescription(String errorDescription, String faultySensor){
+        error = true;
+        this.faultySensor = faultySensor;
         this.errorDescription = errorDescription;
     }
 
@@ -80,15 +93,60 @@ public class StatisticalFolder {
         return output;
     }
 
-    public void setCameraLastFrames(LinkedList<DetectedObject> lastFrames) {
-        this.cameraLastFrames = lastFrames;
+    public void setCameraLastFrames(StampedDetectedObjects lastFrames, String camera) {
+        cameraLastFrames.put(camera, lastFrames);
     }
 
-    public void setTrackedObjects(LinkedList<TrackedObject> lastTrackedObjects) {
-        this.lidarLastFrames = lastTrackedObjects;
+    public void setTrackedObjects(LinkedList<TrackedObject> lastTrackedObjects, String lidar) {
+        lidarLastFrames.put(lidar, lastTrackedObjects);
     }
 
     public void setLastPoses(LinkedList<Pose> poses) {
         this.lastPoses = poses;
+    }
+
+
+    private class ErrorOutput{
+        private String error;
+        private String faultySensor;
+        private HashMap<String,StampedDetectedObjects> lastCamerasFrame;
+        private HashMap<String, LinkedList<TrackedObject>> lastLiDarWorkerTrackersFrame;
+        private LinkedList<Pose> poses;
+        private Output statistics;
+        private ErrorOutput(StatisticalFolder statisticalFolder){
+            this.error = statisticalFolder.errorDescription;
+            this.faultySensor = statisticalFolder.faultySensor;
+            this.lastCamerasFrame = statisticalFolder.cameraLastFrames;
+            this.lastLiDarWorkerTrackersFrame = statisticalFolder.lidarLastFrames;
+            this.poses = statisticalFolder.lastPoses;
+            this.statistics = new Output(statisticalFolder);
+        }
+    }
+    private class Output{
+        private int systemRunTime;
+        private int numDetectedObjects;
+        private int numTrackedObjects;
+        private int numLandmarks;
+        private LinkedList<LandMark> landMarks;
+        private Output(StatisticalFolder statisticalFolder){
+            this.systemRunTime = statisticalFolder.systemRunTime.get();
+            this.numDetectedObjects = statisticalFolder.numDetectedObjects.get();
+            this.numTrackedObjects = statisticalFolder.numTrackedObjects.get();
+            this.numLandmarks = statisticalFolder.numLandmarks.get();
+            this.landMarks = statisticalFolder.landmarks;
+        }
+    }
+    public void output(Gson gson, String directory){
+        try(FileWriter writer = new FileWriter(directory + "/outputTEST.json")){
+            if(error){
+                ErrorOutput errorOutput = new ErrorOutput(this);
+                gson.toJson(errorOutput, writer);
+            }else{
+                Output output = new Output(this);
+                gson.toJson(output, writer);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -111,12 +111,13 @@ public class GurionRockRunner {
             //Adding new Camera for each configuration using new class CameraConfig:
             //fields are id, frequency and String camera_key which represents its KEY in Map<String, List<SDO> we created
             for(CameraConfig cfg : config.Cameras.CamerasConfigurations){
-                myCameras.add(new Camera(cfg.id, cfg.frequency, cameraData.get(cfg.camera_key), statisticalFolder));
+                myCameras.add(new Camera(cfg.id, cfg.frequency, cfg.camera_key,  cameraData.get(cfg.camera_key), statisticalFolder));
             }
             System.out.println(myCameras.getFirst());
             LinkedList<LiDarWorkerTracker> myLidars = new LinkedList<>();
+            int index = 1;
             for(LiDarConfig cfg: config.LiDarWorkers.LidarConfigurations){
-                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, confDir + config.LiDarWorkers.lidars_data_path.substring(1), statisticalFolder));
+                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, "lidar"+index++, confDir + config.LiDarWorkers.lidars_data_path.substring(1), statisticalFolder));
             }
             System.out.println(myLidars.getFirst());
             configReader = new FileReader(confDir + config.poseJsonFile.substring(1));
@@ -159,7 +160,8 @@ public class GurionRockRunner {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            System.out.println(statisticalFolder);
+            statisticalFolder.output(gson, confDir);
+         //   System.out.println(statisticalFolder);
 
 
         } catch (FileNotFoundException e) {

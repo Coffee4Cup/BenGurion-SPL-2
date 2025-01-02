@@ -1,6 +1,4 @@
 package bgu.spl.mics.application.objects;
-import bgu.spl.mics.application.GurionRockRunner;
-import bgu.spl.mics.application.messages.DetectedObjectEvent;
 import bgu.spl.mics.application.services.CameraService;
 
 import java.util.HashMap;
@@ -13,19 +11,21 @@ import java.util.LinkedList;
 public class Camera {
     private int id;
     private int frequency;
+    private String name;
     private STATUS status;
     private final Object lock;
     private int finalTick;
     private boolean isDone;
     private final StatisticalFolder statisticalFolder;
     private CameraService service;
-    private LinkedList<DetectedObject> lastFrames;
+    private StampedDetectedObjects lastFrames;
 
     private HashMap<Integer, StampedDetectedObjects> detectedObjectList; //might get changed
 
-    public Camera(int id, int frequency, LinkedList<StampedDetectedObjects> stampedDetectedObjects, StatisticalFolder statisticalFolder) {
+    public Camera(int id, int frequency, String name, LinkedList<StampedDetectedObjects> stampedDetectedObjects, StatisticalFolder statisticalFolder) {
         this.id = id;
         this.frequency = frequency;
+        this.name = name;
         this.status = STATUS.DOWN;
         lock = new Object();
         isDone = false;
@@ -46,7 +46,7 @@ public class Camera {
 
     public void error(String description){
         setStatus(STATUS.ERROR);
-        statisticalFolder.setErrorDescription(description);
+        statisticalFolder.setErrorDescription(description, name);
         updateLastFrames();
     }
 
@@ -71,14 +71,14 @@ public class Camera {
                 }
             }
             objecstDetected(sdo.getNumOfDetectedObjects());
-            lastFrames = sdo.getDetectedObjects();
+            lastFrames = sdo;
             return sdo;
         }
         return null;
     }
 
     public void updateLastFrames(){
-        statisticalFolder.setCameraLastFrames(lastFrames);
+        statisticalFolder.setCameraLastFrames(lastFrames, name);
     }
 
 

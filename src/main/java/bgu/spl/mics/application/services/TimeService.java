@@ -58,6 +58,7 @@ public class TimeService extends MicroService {
         }catch (InterruptedException e) {
             System.out.println("Clock stopped");
         }
+        terminate();
         sendBroadcast(new TerminatedBroadcast());
     }
 }
