@@ -3,10 +3,7 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.Future;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.messages.DetectedObjectEvent;
-import bgu.spl.mics.application.messages.TerminatedBroadcast;
-import bgu.spl.mics.application.messages.TickBroadcast;
-import bgu.spl.mics.application.messages.TrackedObjectsEvent;
+import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.*;
 
 import java.util.LinkedList;
@@ -22,8 +19,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class LiDarService extends MicroService {
     private final LiDarWorkerTracker liDarWorkerTracker;
-    private final LinkedList<StampedDetectedObjects> jobList;
-    private final LinkedList<Future<Boolean>> detectionHistory;
     private int currentTick;
     /**
      * Constructor for LiDarService.
@@ -34,8 +29,7 @@ public class LiDarService extends MicroService {
         super("LidarService");
         currentTick = 0;
         this.liDarWorkerTracker = LiDarWorkerTracker;
-        jobList = new LinkedList<>();
-        detectionHistory = new LinkedList<>();
+        liDarWorkerTracker.setService(this);
     }
 
     /**
@@ -46,6 +40,22 @@ public class LiDarService extends MicroService {
     @Override
     protected void initialize() {
         subscribeEvent(DetectedObjectEvent.class, e-> {
+            //new logic
+            LinkedList<TrackedObject> newBatch = liDarWorkerTracker.submitJob(e.getStampedDetectedObjects(), currentTick);
+            if(newBatch != null){
+                Future<Boolean> f = sendEvent(new TrackedObjectsEvent(newBatch));
+            }
+            if(liDarWorkerTracker.getStatus() != STATUS.UP){
+                terminate();
+                if(liDarWorkerTracker.getStatus() == STATUS.ERROR)
+                    sendBroadcast(new CrashedBroadcast());
+                else
+                    sendBroadcast(new TerminatedBroadcast(this));
+                System.out.println("Terminated LiDarService");
+            }
+
+
+   /**         //old logic
             if(e.getStampedDetectedObjects() != null)
                 jobList.add(e.getStampedDetectedObjects());
             if(!jobList.isEmpty() && jobList.getFirst().getTime() >= currentTick + liDarWorkerTracker.getFrequency() ){
@@ -55,6 +65,11 @@ public class LiDarService extends MicroService {
                 MessageBusImpl.getInstance().complete(e, true);
                 LinkedList<TrackedObject> toList = new LinkedList<>();
                 for(DetectedObject d : doList){
+                    if(d.id() == "error"){
+                        liDarWorkerTracker.error(d.description());
+
+                    }
+
                     StampedCloudPoints scp = LiDarDataBase.getInstance(liDarWorkerTracker.getPath()).getStampedCloudPoints(sdo.getTime()+d.id());
                     if (scp != null) {
                         TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
@@ -65,14 +80,30 @@ public class LiDarService extends MicroService {
                 Future<Boolean> f = sendEvent(new TrackedObjectsEvent(toList));
                 liDarWorkerTracker.addTrackedObjects(toList.size());
                 detectionHistory.add(f);
-            }
+            }*/
         });
         subscribeBroadcast(TickBroadcast.class, t-> {
             currentTick = t.getTick();
 
         });
         subscribeBroadcast(TerminatedBroadcast.class, t-> {
-            terminate();
+            if(t.getService() instanceof TimeService){
+                liDarWorkerTracker.setStatus(STATUS.DOWN);
+                sendBroadcast(new TerminatedBroadcast(this));
+                terminate();
+                System.out.println("Terminated LiDarService");
+            }
         });
+
+        subscribeBroadcast(CrashedBroadcast.class, t->{
+            liDarWorkerTracker.setStatus(STATUS.DOWN);
+            liDarWorkerTracker.updateLastFrames();
+            sendBroadcast(new TerminatedBroadcast(this));
+            terminate();
+            System.out.println("Terminated LiDarService");
+        });
+        liDarWorkerTracker.setStatus(STATUS.UP);
+        Future<Boolean> start = sendEvent(new InitializedEvent(this));
+     //   start.get();
     }
 }

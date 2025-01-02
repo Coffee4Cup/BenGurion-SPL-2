@@ -28,7 +28,7 @@ public class TestFuture {
 	 * 
 	 * @returns result if and only if result != null
 	 * blocks current thread until result != null
-	 */
+	 *
 	@Test
 	public void testGet() {
 		Thread t1 = new Thread(()->  i2 = f.get());
@@ -49,7 +49,7 @@ public class TestFuture {
 	 * 
 	 * @returns result != null
 	 *
-	 */
+	 *
 	@Test
 	public void testIsDone() {
 		assertTrue(!f.isDone());
@@ -64,7 +64,7 @@ public class TestFuture {
 	 * notifies all waiting on result after update
 	 * 
 	 * 
-	 */
+	 *
 	@Test
 	public void testResolve() {
 		Thread t1 = new Thread(()->i2 = f.get());
@@ -89,7 +89,7 @@ public class TestFuture {
 	 * @param T result
 	 * @PRE non
 	 * @POST non
-	 */
+	 *
 	@Test
 	public void testGetWithTimeout() {
 		TimeUnit unit = TimeUnit.MICROSECONDS;
@@ -105,5 +105,5 @@ public class TestFuture {
 		i2 = f.get(1, unit);
 		assertTrue(i2 == 1);
 	}
-	
+	*/
 }

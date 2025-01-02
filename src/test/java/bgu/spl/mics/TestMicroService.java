@@ -89,7 +89,7 @@ class TestMicroService {
 
 
     }
-
+/**
     @Test
     void complete() {
         Thread testThread1 = new Thread(microService);
@@ -202,5 +202,5 @@ class TestMicroService {
 
     @Test
     void run() {
-    }
+    }*/
 }

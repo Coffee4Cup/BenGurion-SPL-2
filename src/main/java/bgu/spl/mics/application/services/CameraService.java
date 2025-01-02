@@ -3,13 +3,8 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.Callback;
 import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.messages.DetectedObjectEvent;
-import bgu.spl.mics.application.messages.TerminatedBroadcast;
-import bgu.spl.mics.application.messages.TickBroadcast;
-import bgu.spl.mics.application.objects.Camera;
-import bgu.spl.mics.application.objects.DetectedObject;
-import bgu.spl.mics.application.objects.StampedDetectedObjects;
-import bgu.spl.mics.application.objects.StatisticalFolder;
+import bgu.spl.mics.application.messages.*;
+import bgu.spl.mics.application.objects.*;
 
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +27,7 @@ public class CameraService extends MicroService {
     public CameraService(Camera camera) {
         super("cameraService");
         this.camera = camera;
+        camera.setService(this);
         detectionHistory = new LinkedList<>();
     }
 
@@ -46,16 +42,37 @@ public class CameraService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, t -> {
             StampedDetectedObjects sdo = camera.getDetectedObjectList(t.getTick() - camera.getFrequency());
             if(sdo != null){
-                camera.objecstDetected(sdo.getNumOfDetectedObjects());
                 Future<Boolean> f = sendEvent(new DetectedObjectEvent(sdo));
                 detectionHistory.add(f);
             }
+            else{
+                if(camera.getStatus() != STATUS.UP){
+                    terminate();
+                    if(camera.getStatus() == STATUS.ERROR)
+                        sendBroadcast(new CrashedBroadcast());
+                    else
+                        sendBroadcast(new TerminatedBroadcast(this));
+                }
+            }
         });
         subscribeBroadcast(TerminatedBroadcast.class, t -> {
-
-            terminate();
+            if(t.getService() instanceof TimeService){
+                camera.setStatus(STATUS.DOWN);
+                terminate();
+                sendBroadcast(new TerminatedBroadcast(this));
+            }
             System.out.println("Terminated CameraService, score is ");
         });
+        subscribeBroadcast(CrashedBroadcast.class, t->{
+            camera.updateLastFrames();
+            camera.setStatus(STATUS.DOWN);
+            sendBroadcast(new TerminatedBroadcast(this));
+            terminate();
+        });
+        camera.setStatus(STATUS.UP);
+        Future<Boolean> start = sendEvent(new InitializedEvent(this));
+    //    start.get();
+
     }
 
 }

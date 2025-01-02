@@ -9,6 +9,10 @@ public class TerminatedBroadcast implements Broadcast {
         this.terminatedMicroservice = null;
     }
 
+    public MicroService getService(){
+        return terminatedMicroservice;
+    }
+
     /**
      * @apiNote added for other Microservices to check when getting a Broadcast if the microservice that is terminated is timeService
      * @param terminatedMicroservice the microService that is terminated

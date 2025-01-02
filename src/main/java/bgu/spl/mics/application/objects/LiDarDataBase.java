@@ -17,13 +17,22 @@ import java.util.LinkedList;
 public class LiDarDataBase {
     private HashMap<String, StampedCloudPoints> cloudPoints;
     private static volatile LiDarDataBase instance;
+    private int finalTick;
+    private boolean isDone;
 
 
     private LiDarDataBase(LinkedList<StampedCloudPoints> cloudPoints) {
         this.cloudPoints = new HashMap<>();
         for(StampedCloudPoints scp: cloudPoints){
+            if(scp.getTime() > finalTick){
+                finalTick = scp.getTime();
+            }
             this.cloudPoints.put(scp.getTime() + scp.getId(), scp);
         }
+    }
+
+    public boolean isDone(){
+        return isDone;
     }
     /**
      * Returns the singleton instance of LiDarDataBase.
@@ -50,7 +59,11 @@ public class LiDarDataBase {
     }
 
     public StampedCloudPoints getStampedCloudPoints(String id){
-        return cloudPoints.get(id);
+        StampedCloudPoints scp = cloudPoints.get(id);
+        if(scp != null && scp.getTime() == finalTick){
+            isDone = true;
+        }
+        return scp;
     }
 
     public String toString(){

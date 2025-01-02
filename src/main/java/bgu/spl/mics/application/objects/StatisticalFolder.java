@@ -13,6 +13,10 @@ public class StatisticalFolder {
     private final AtomicInteger numDetectedObjects;
     private final AtomicInteger numTrackedObjects;
     private final AtomicInteger numLandmarks;
+    private LinkedList<DetectedObject> cameraLastFrames;
+    private LinkedList<TrackedObject> lidarLastFrames;
+    private String errorDescription;
+    private LinkedList<Pose> lastPoses;
 
     private LinkedList<LandMark> landmarks;
 
@@ -21,6 +25,10 @@ public class StatisticalFolder {
         numDetectedObjects = new AtomicInteger(0);
         numTrackedObjects = new AtomicInteger(0);
         numLandmarks = new AtomicInteger(0);
+    }
+
+    public void setErrorDescription(String errorDescription){
+        this.errorDescription = errorDescription;
     }
 
     public void setSystemRunTime(Integer amount){
@@ -70,5 +78,17 @@ public class StatisticalFolder {
                 " Landmarks: "+numLandmarks.get();
         output += "\nLandmarks: "+landmarks;
         return output;
+    }
+
+    public void setCameraLastFrames(LinkedList<DetectedObject> lastFrames) {
+        this.cameraLastFrames = lastFrames;
+    }
+
+    public void setTrackedObjects(LinkedList<TrackedObject> lastTrackedObjects) {
+        this.lidarLastFrames = lastTrackedObjects;
+    }
+
+    public void setLastPoses(LinkedList<Pose> poses) {
+        this.lastPoses = poses;
     }
 }

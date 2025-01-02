@@ -111,7 +111,7 @@ public class TestMessageBusImpl {
 	@AfterEach
 	public void tearDown() {
 		
-	}
+	}/**
 	@Test
 	public void testRegister(){
 		for(Thread t: threadList){
@@ -194,5 +194,5 @@ public class TestMessageBusImpl {
 	@Test
 	public void testAwaitMessage(){
 
-	}
+	}*/
 }

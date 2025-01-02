@@ -1,5 +1,10 @@
 package bgu.spl.mics.application.objects;
 
+import bgu.spl.mics.Future;
+import bgu.spl.mics.MessageBusImpl;
+import bgu.spl.mics.application.messages.TrackedObjectsEvent;
+import bgu.spl.mics.application.services.LiDarService;
+
 import java.util.LinkedList;
 
 /**
@@ -12,17 +17,69 @@ public class LiDarWorkerTracker {
     private int frequency;
     private STATUS status;
     private String lidars_data_path;
+    private final LinkedList<StampedDetectedObjects> jobList;
     private LinkedList<TrackedObject> lastTrackedObjects;
     private final StatisticalFolder statisticalFolder;
+    private LiDarService service;
 
-    public LiDarWorkerTracker(int id, int frequency, STATUS status, String lidars_data_path, StatisticalFolder statisticalFolder) {
+    public LiDarWorkerTracker(int id, int frequency, String lidars_data_path, StatisticalFolder statisticalFolder) {
         this.id = id;
         this.frequency = frequency;
-        this.status = status;
+        this.status = STATUS.DOWN;
         this.lastTrackedObjects = new LinkedList<>();
         this.lidars_data_path = lidars_data_path;
         this.statisticalFolder = statisticalFolder;
+        jobList = new LinkedList<>();
     }
+
+    public void setService(LiDarService service){
+        this.service = service;
+    }
+
+    public LinkedList<TrackedObject> submitJob(StampedDetectedObjects stampedDetectedObjects, int currentTick) {
+        if (stampedDetectedObjects != null)
+            jobList.add(stampedDetectedObjects);
+        if (!jobList.isEmpty() && jobList.getFirst().getTime() >= currentTick + frequency) {
+            StampedDetectedObjects sdo = jobList.removeFirst();
+            System.out.println("Lidar working on job " + sdo.getTime() + " at " + currentTick);
+            LinkedList<DetectedObject> doList = sdo.getDetectedObjects();
+            LinkedList<TrackedObject> toList = new LinkedList<>();
+            for (DetectedObject d : doList) {
+                if (d.id() == "error") {
+                    error(d.description());
+                    return null;
+                }
+                StampedCloudPoints scp = LiDarDataBase.getInstance(lidars_data_path).getStampedCloudPoints(sdo.getTime() + d.id());
+                if (LiDarDataBase.getInstance(lidars_data_path).isDone()) {
+                    status = STATUS.DOWN;
+                }
+                if (scp != null) {
+                    TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
+                    System.out.println("found scp: " + scp);
+                    toList.add(to);
+                }
+            }
+            statisticalFolder.addTrackedObjects(toList.size());
+            lastTrackedObjects = toList;
+            return toList;
+        }
+        return null;
+    }
+
+    public STATUS getStatus() {
+        return status;
+    }
+
+    public void error(String description){
+        setStatus(STATUS.ERROR);
+        statisticalFolder.setErrorDescription(description);
+        updateLastFrames();
+    }
+
+    public void updateLastFrames(){
+        statisticalFolder.setTrackedObjects(lastTrackedObjects);
+    }
+
 
     public int getId() {
         return id;
@@ -51,4 +108,7 @@ public class LiDarWorkerTracker {
     }
 
 
+    public void setStatus(STATUS status) {
+        this.status = status;
+    }
 }
