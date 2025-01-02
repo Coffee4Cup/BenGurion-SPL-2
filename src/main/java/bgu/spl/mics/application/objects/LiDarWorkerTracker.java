@@ -45,7 +45,7 @@ public class LiDarWorkerTracker {
             LinkedList<DetectedObject> doList = sdo.getDetectedObjects();
             LinkedList<TrackedObject> toList = new LinkedList<>();
             for (DetectedObject d : doList) {
-                if (d.id() == "error") {
+                if (d.id() == "ERROR") {
                     error(d.description());
                     return null;
                 }

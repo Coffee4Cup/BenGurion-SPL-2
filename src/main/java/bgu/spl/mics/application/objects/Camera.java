@@ -65,7 +65,7 @@ public class Camera {
         if(detectedObjectList.containsKey(time - frequency)) {
             sdo =  detectedObjectList.remove(time - frequency);
             for(DetectedObject detectedObject: sdo.getDetectedObjects()) {
-                if(detectedObject.id() == "error") {
+                if(detectedObject.id().equals("ERROR")) {
                     error(detectedObject.description());
                     return null;
                 }
