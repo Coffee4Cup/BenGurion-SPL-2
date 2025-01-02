@@ -43,7 +43,7 @@ public class CameraService extends MicroService {
     protected void initialize() {
         System.out.println("Initializing CameraService");
         subscribeBroadcast(TickBroadcast.class, t -> {
-            StampedDetectedObjects sdo = camera.getDetectedObjectList(t.getTick());
+            StampedDetectedObjects sdo = camera.getStampedDetectedObjects(t.getTick());
             for(DetectedObject d  : sdo.getDetectedObjects()) {
                 detectionHistory.add(sendEvent(new DetectedObjectEvent( d )));
             }

@@ -15,20 +15,18 @@ public class Camera {
     private STATUS status;
     private int numOfDetectedObjects;
 
-    private HashMap<Integer, StampedDetectedObjects> detectedObjectList; //might get changed
+    private LinkedList<StampedDetectedObjects> stampedDetectedObjects;
 
     public Camera(int id, int frequency, STATUS status, LinkedList<StampedDetectedObjects> stampedDetectedObjects) {
         this.id = id;
         this.frequency = frequency;
         this.status = status;
         numOfDetectedObjects = 0;
-        for(StampedDetectedObjects sto: stampedDetectedObjects) {
-            detectedObjectList.put(sto.getTime(), sto);
-        }
+        this.stampedDetectedObjects = stampedDetectedObjects;
     }
 
-    public StampedDetectedObjects  getDetectedObjectList(int time) {
-        return detectedObjectList.get(time);
+    public StampedDetectedObjects  getStampedDetectedObjects(int time) {
+        return stampedDetectedObjects.get(time);
     }
 
 
@@ -52,7 +50,7 @@ public class Camera {
     public void setId(int id) {this.id = id;}
 
     public String toString(){
-        return "ID: " + id + " Frequency: " + frequency + " Status: " + status + " Detected Objects: " + detectedObjectList;
+        return "ID: " + id + " Frequency: " + frequency + " Status: " + status + " Detected Objects: " + stampedDetectedObjects;
     }
 
 }
