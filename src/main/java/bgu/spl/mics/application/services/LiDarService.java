@@ -26,7 +26,7 @@ public class LiDarService extends MicroService {
      * @param LiDarWorkerTracker A LiDAR Tracker worker object that this service will use to process data.
      */
     public LiDarService(LiDarWorkerTracker LiDarWorkerTracker) {
-        super("LidarService");
+        super(LiDarWorkerTracker.getName());
         currentTick = 0;
         this.liDarWorkerTracker = LiDarWorkerTracker;
         liDarWorkerTracker.setService(this);
@@ -51,7 +51,7 @@ public class LiDarService extends MicroService {
                     sendBroadcast(new CrashedBroadcast());
                 else
                     sendBroadcast(new TerminatedBroadcast(this));
-                System.out.println("Terminated LiDarService");
+                System.out.println("Terminated " + getName());
             }
 
 
@@ -91,7 +91,7 @@ public class LiDarService extends MicroService {
                 liDarWorkerTracker.setStatus(STATUS.DOWN);
                 sendBroadcast(new TerminatedBroadcast(this));
                 terminate();
-                System.out.println("Terminated LiDarService");
+                System.out.println("Terminated "+getName());
             }
         });
 
@@ -100,7 +100,7 @@ public class LiDarService extends MicroService {
             liDarWorkerTracker.updateLastFrames();
             sendBroadcast(new TerminatedBroadcast(this));
             terminate();
-            System.out.println("Terminated LiDarService");
+            System.out.println("Terminated "+getName());
         });
         liDarWorkerTracker.setStatus(STATUS.UP);
         Future<Boolean> start = sendEvent(new InitializedEvent(this));

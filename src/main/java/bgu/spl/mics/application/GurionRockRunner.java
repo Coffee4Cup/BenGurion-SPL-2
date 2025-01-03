@@ -5,6 +5,7 @@ import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.*;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.FileNotFoundException;
@@ -112,8 +113,8 @@ public class GurionRockRunner {
             //fields are id, frequency and String camera_key which represents its KEY in Map<String, List<SDO> we created
             for(CameraConfig cfg : config.Cameras.CamerasConfigurations){
                 myCameras.add(new Camera(cfg.id, cfg.frequency, cfg.camera_key,  cameraData.get(cfg.camera_key), statisticalFolder));
+                System.out.println(myCameras.getLast());
             }
-            System.out.println(myCameras.getFirst());
             LinkedList<LiDarWorkerTracker> myLidars = new LinkedList<>();
             int index = 1;
             for(LiDarConfig cfg: config.LiDarWorkers.LidarConfigurations){
@@ -124,9 +125,37 @@ public class GurionRockRunner {
             Type poseListType = new TypeToken<LinkedList<Pose>>() {}.getType();
             GPSIMU gpsimu = new GPSIMU(gson.fromJson(configReader, poseListType));
             System.out.println(gpsimu +" \ntick:" + config.TickTime + " duration:" + config.Duration);
-            MicroService m1, m2, m3, m4, m5;
+
             //TODO implement threads with executor service. Make sure TimeService runs last!
-            m1 = new CameraService(myCameras.getFirst());
+            LinkedList<MicroService> services = new LinkedList<>();
+            for(Camera camera : myCameras){
+                CameraService cameraService = new CameraService(camera);
+                services.add(cameraService);
+                FusionSlam.getInstance().addCamera(camera);
+            }
+            for(LiDarWorkerTracker lidar : myLidars){
+                LiDarService liDarService = new LiDarService(lidar);
+                services.add(liDarService);
+                FusionSlam.getInstance().addLidar(lidar);
+            }
+            PoseService poseService = new PoseService(gpsimu);
+            services.add(poseService);
+            FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
+            services.add(fusionSlamService);
+            FusionSlam.getInstance().setStatisticalFolder(statisticalFolder);
+            FusionSlam.getInstance().setTimeService(timeService);
+            FusionSlam.getInstance().setGpsimu(gpsimu);
+            Object sysLock = new Object();
+            FusionSlam.getInstance().setSysLock(sysLock);
+            LinkedList<Thread> threads = new LinkedList<>();
+            for(MicroService service : services){
+                Thread t = new Thread(service);
+                threads.add(t);
+                t.start();
+            }
+            Thread timeThread = new Thread(timeService);
+            timeThread.start();
+     /**       m1 = new CameraService(myCameras.getFirst());
             m5 = new TimeService(config.TickTime, config.Duration);
             m3 = new LiDarService(myLidars.getFirst());
             m4 = new FusionSlamService(FusionSlam.getInstance());
@@ -147,20 +176,21 @@ public class GurionRockRunner {
             t2.start();
             t3.start();
             t4.start();
-            t5.start();
+            t5.start();*/
             //output.json creation:
             //TODO implement output.json creation
             try{
                 synchronized(sysLock) {
                     sysLock.wait();
                 }
-                t5.interrupt();
-                statisticalFolder.setSystemRunTime(((TimeService) m5).getCurrentTick());
+                timeThread.interrupt();
+                statisticalFolder.setSystemRunTime(timeService.getCurrentTick());
 
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            statisticalFolder.output(gson, confDir);
+
+            statisticalFolder.output(new GsonBuilder().setPrettyPrinting().create(), confDir);
          //   System.out.println(statisticalFolder);
 
 

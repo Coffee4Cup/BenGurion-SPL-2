@@ -38,28 +38,34 @@ public class LiDarWorkerTracker {
         this.service = service;
     }
 
+    public String getName(){
+        return name;
+    }
+
     public LinkedList<TrackedObject> submitJob(StampedDetectedObjects stampedDetectedObjects, int currentTick) {
         if (stampedDetectedObjects != null)
             jobList.add(stampedDetectedObjects);
-        if (!jobList.isEmpty() && jobList.getFirst().getTime() >= currentTick + frequency) {
+        if (!jobList.isEmpty() && jobList.getFirst().getTime() <= currentTick + frequency) {
             StampedDetectedObjects sdo = jobList.removeFirst();
             System.out.println("Lidar working on job " + sdo.getTime() + " at " + currentTick);
+            if (LiDarDataBase.getInstance(lidars_data_path).getStampedCloudPoints(sdo.getTime() + "ERROR") != null) {
+                error("Error in " + getName() + " at time " + sdo.getTime());
+                return null;
+            }
             LinkedList<DetectedObject> doList = sdo.getDetectedObjects();
             LinkedList<TrackedObject> toList = new LinkedList<>();
             for (DetectedObject d : doList) {
-                if (d.id() == "ERROR") {
-                    error(d.description());
-                    return null;
-                }
+
                 StampedCloudPoints scp = LiDarDataBase.getInstance(lidars_data_path).getStampedCloudPoints(sdo.getTime() + d.id());
-                if (LiDarDataBase.getInstance(lidars_data_path).isDone()) {
-                    status = STATUS.DOWN;
-                }
+
                 if (scp != null) {
                     TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
                     System.out.println("found scp: " + scp);
                     toList.add(to);
                 }
+            }
+            if (LiDarDataBase.getInstance(lidars_data_path).isDone()) {
+                status = STATUS.DOWN;
             }
             statisticalFolder.addTrackedObjects(toList.size());
             lastTrackedObjects = toList;

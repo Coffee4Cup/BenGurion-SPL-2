@@ -52,7 +52,7 @@ public class TimeService extends MicroService {
             while(currentTick < duration) {
                 TimeUnit.SECONDS.sleep(tickTime);
                 sendBroadcast(new TickBroadcast(currentTick));
-                currentTick+=tickTime;
+                currentTick++;
             }
 
         }catch (InterruptedException e) {

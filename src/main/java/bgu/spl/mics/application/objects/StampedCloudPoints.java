@@ -27,9 +27,11 @@ public class StampedCloudPoints {
     public synchronized LinkedList<CloudPoint> getCloudPoint(){
         if(cloudPointsList == null){
             cloudPointsList = new LinkedList<>();
-            for (Double[] point : cloudPoints) {
+            cloudPointsList.add(new CloudPoint(cloudPoints[0][0], cloudPoints[0][1]));
+            cloudPointsList.add(new CloudPoint(cloudPoints[1][0], cloudPoints[1][1]));
+       /**     for (Double[] point : cloudPoints) {
                 cloudPointsList.add(new CloudPoint(point[0], point[1]));
-            }
+            }*/
         }
         return cloudPointsList;
     }

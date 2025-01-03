@@ -101,4 +101,7 @@ public class Camera {
         return "ID: " + id + " Frequency: " + frequency + " Status: " + status + " Detected Objects: " + detectedObjectList;
     }
 
+    public String getName() {
+        return name;
+    }
 }

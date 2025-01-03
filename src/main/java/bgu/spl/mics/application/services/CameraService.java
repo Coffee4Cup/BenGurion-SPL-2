@@ -25,7 +25,7 @@ public class CameraService extends MicroService {
      * @param camera The Camera object that this service will use to detect objects.
      */
     public CameraService(Camera camera) {
-        super("cameraService");
+        super(camera.getName());
         this.camera = camera;
         camera.setService(this);
         detectionHistory = new LinkedList<>();
@@ -40,6 +40,7 @@ public class CameraService extends MicroService {
     protected void initialize() {
         System.out.println("Initializing CameraService");
         subscribeBroadcast(TickBroadcast.class, t -> {
+            System.out.println(getName() + " is processing tick "+t.getTick());
             StampedDetectedObjects sdo = camera.getDetectedObjectList(t.getTick() - camera.getFrequency());
             if(sdo != null){
                 Future<Boolean> f = sendEvent(new DetectedObjectEvent(sdo));
