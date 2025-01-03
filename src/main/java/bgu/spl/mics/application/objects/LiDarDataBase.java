@@ -54,6 +54,6 @@ public class LiDarDataBase {
     }
 
     public String toString(){
-        return "CloudPoints: "+cloudPoints;
+        return "StampedCloudPoints: "+cloudPoints;
     }
 }

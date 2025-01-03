@@ -41,7 +41,7 @@ public class FusionSlamService extends MicroService {
         subscribeEvent(TrackedObjectsEvent.class, e-> {
             for(TrackedObject to : e.getTrackedObjects()){
                 Pose currentPose = fusion.getPose(to.getTime());
-                System.out.print("CurrentPose: "+currentPose);
+                System.out.print("CurrentPose: " + currentPose +", ");
                 LinkedList<CloudPoint> localCloudPoints = to.getCoordinates();
                 //Calculating landmarks in global coordinates
                 float yawRad = ( currentPose.getYaw() * (float) Math.PI ) / 180;
@@ -49,7 +49,7 @@ public class FusionSlamService extends MicroService {
                 float sinRad = (float) Math.sin(yawRad);
                 CloudPoint local1 = localCloudPoints.get(0);
                 CloudPoint local2 = localCloudPoints.get(1);
-                System.out.println("yaw: "+yawRad+" cos: "+cosRad+" sin: "+sinRad+" local1: "+local1+" local2: "+local2);
+                System.out.println("yaw(In Radian): "+yawRad+", cos: "+cosRad+", sin: "+sinRad+", local1: "+local1+", local2: "+local2);
                 CloudPoint global1 = new CloudPoint(
                         currentPose.getX() + ((local1.x() * cosRad ) - (local1.y() * sinRad)),
                         currentPose.getY() + ((local1.x() * sinRad ) + (local1.y() * cosRad)));

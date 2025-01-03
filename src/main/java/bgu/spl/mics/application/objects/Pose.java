@@ -30,6 +30,6 @@ public class Pose {
     }
 
     public String toString(){
-        return "x: " + x + ", y: " + y + ", yaw: " + yaw + ", time: " + time;
+        return "x: " + x + ", y: " + y + ", yaw(In degrees): " + yaw + ", time: " + time;
     }
 }

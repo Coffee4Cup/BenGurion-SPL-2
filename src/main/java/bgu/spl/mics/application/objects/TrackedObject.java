@@ -31,4 +31,12 @@ public class TrackedObject {
     public LinkedList<CloudPoint> getCoordinates() {
         return coordinates;
     }
+
+    @Override
+    public String toString() {
+        return  "id='" + id + '\'' +
+                ", time=" + time +
+                ", description='" + description + '\'' +
+                ", coordinates=" + coordinates;
+    }
 }
