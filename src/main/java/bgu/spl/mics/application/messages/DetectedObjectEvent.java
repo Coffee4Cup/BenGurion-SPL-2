@@ -37,6 +37,6 @@ public class DetectedObjectEvent implements Event<Boolean> {
 
     @Override
     public String toString() {
-        return "\'Detecting Objects\': " +"Object amount: " + amount + ", " + "detected Objects: " + detectedObjects;
+        return "DetectedObjectEvent, Objects amount: " + amount + ", " + "detected Objects: " + detectedObjects;
     }
 }

@@ -19,7 +19,6 @@ public class TerminatedBroadcast implements Broadcast {
 
     @Override
     public String toString() {
-        return "\'TerminatedBroadcast\':" +
-                "terminatedMicroservice: " + terminatedMicroservice;
+        return "TerminatedBroadcastEvent, terminatedMicroservice: " + terminatedMicroservice;
     }
 }

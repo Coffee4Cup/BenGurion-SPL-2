@@ -27,6 +27,6 @@ public class TrackedObjectsEvent implements Event<Boolean> {
 
     @Override
     public String toString() {
-        return "\'TrackingObjects\': " + trackedObjects ;
+        return "TrackedObjectsEvent, Objects Tracked: " + trackedObjects ;
     }
 }

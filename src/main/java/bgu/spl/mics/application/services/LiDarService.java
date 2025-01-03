@@ -50,7 +50,7 @@ public class LiDarService extends MicroService {
                 jobList.add(e.getStampedDetectedObjects());
             if(!jobList.isEmpty() && jobList.getFirst().getTime() >= currentTick + liDarWorkerTracker.getFrequency() ){
                 StampedDetectedObjects sdo = jobList.removeFirst();
-                System.out.println("Lidar working on job: " + sdo + " at time: "+currentTick);
+                System.out.println("Lidar Tracking detected Objects: " + sdo);
                 LinkedList<DetectedObject> doList = sdo.getDetectedObjects();
                 LinkedList<TrackedObject> toList = new LinkedList<>();
                 for(DetectedObject d : doList){

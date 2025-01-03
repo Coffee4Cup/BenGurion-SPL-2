@@ -26,7 +26,7 @@ public class PoseEvent implements Event<Pose> {
 
     @Override
     public String toString() {
-        return "\'newPose\': " + newPose;
+        return "PoseEvent, new Pose: " + newPose;
 
     }
 }

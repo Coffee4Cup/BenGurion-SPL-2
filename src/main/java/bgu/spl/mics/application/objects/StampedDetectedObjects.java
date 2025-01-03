@@ -34,7 +34,7 @@ public class StampedDetectedObjects {
 
     @Override
     public String toString() {
-        return    "\'Detected Objects\':" + "Detection Time: " + time +
-                ", detectedObjects = " + detectedObjects;
+        return     "Detection Time: " + time +
+                ", Objects detected: " + detectedObjects;
     }
 }
