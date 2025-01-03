@@ -85,6 +85,13 @@ public class Future<T> {
 		}
 		
 	}
-		
+
+	@Override
+	public String toString() {
+		if(isDone())
+			return "Future is resolved, Result: " + result;
+
+		return "Future is not resolved";
+	}
 }
 

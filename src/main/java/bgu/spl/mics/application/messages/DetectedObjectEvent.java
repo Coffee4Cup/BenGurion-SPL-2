@@ -34,4 +34,9 @@ public class DetectedObjectEvent implements Event<Boolean> {
     public StampedDetectedObjects getStampedDetectedObjects() {
         return detectedObjects;
     }
+
+    @Override
+    public String toString() {
+        return "\'Detecting Objects\': " +"Object amount: " + amount + ", " + "detected Objects: " + detectedObjects;
+    }
 }

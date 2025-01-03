@@ -34,68 +34,12 @@ public class GurionRockRunner {
      * @param args Command-line arguments. The first argument is expected to be the path to the configuration file.
      */
 
-    private class Cameras{
-        private LinkedList<CameraConfig> CamerasConfigurations;
-        private String camera_datas_path;
-
-        private Cameras(LinkedList<CameraConfig> cameraConfigurations, String camera_datas_path) {
-            this.CamerasConfigurations = CamerasConfigurations;
-            this.camera_datas_path = camera_datas_path;
-        }
-    }
-
-    private class CameraConfig{
-        private int id;
-        private int frequency;
-        private String camera_key;
-
-        private CameraConfig(int id, int frequency, String camera_key) {
-            this.id = id;
-            this.frequency = frequency;
-            this.camera_key = camera_key;
-        }
-    }
-
-    private class LidarWorkers{
-        private LinkedList<LiDarConfig> LidarConfigurations;
-        private String lidars_data_path;
-
-        private LidarWorkers(LinkedList<LiDarConfig> LidarConfigurations, String lidars_data_path) {
-            this.LidarConfigurations = LidarConfigurations;
-            this.lidars_data_path = lidars_data_path;
-        }
-    }
-
-    private class LiDarConfig{
-        private int id;
-        private int frequency;
-
-        private LiDarConfig(int id, int frequency) {
-            this.id = id;
-            this.frequency = frequency;
-        }
-    }
-    private class Config {
-        private Cameras Cameras;
-        private LidarWorkers LidarWorkers;
-        private String poseJsonFile;
-        private int TickTime;
-        private int Duration;
-
-        private Config(Cameras Cameras, LidarWorkers LidarWorkers, String poseJsonFile, int TickTime, int Duration) {
-            this.Cameras = Cameras;
-            this.LidarWorkers = LidarWorkers;
-            this.poseJsonFile = poseJsonFile;
-            this.TickTime = TickTime;
-            this.Duration = Duration;
-        }
-    }
     public static void main(String[] args) {
         Gson gson = new Gson();
         try {
             StatisticalFolder statisticalFolder = new StatisticalFolder();
             //Reader from java IO to read config file
-            Reader configReader = new FileReader("./configuration_file.json");
+            Reader configReader = new FileReader(args[0]);
             //New class Config with fields corresponding to configuration_file.json
             Config config = gson.fromJson(configReader, Config.class);
             //Reading from new file addressed in configuration_file.json
@@ -114,8 +58,8 @@ public class GurionRockRunner {
             }
             System.out.println(myCameras.getFirst());
             LinkedList<LiDarWorkerTracker> myLidars = new LinkedList<>();
-            for(LiDarConfig cfg: config.LidarWorkers.LidarConfigurations){
-                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, STATUS.UP, config.LidarWorkers.lidars_data_path, statisticalFolder));
+            for(LiDarConfig cfg: config.LiDarWorkers.LidarConfigurations){
+                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, STATUS.UP, config.LiDarWorkers.lidars_data_path, statisticalFolder));
             }
             System.out.println(myLidars.getFirst());
             configReader = new FileReader(config.poseJsonFile);
@@ -156,6 +100,62 @@ public class GurionRockRunner {
 
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
+        }
+    }
+    private class Cameras{
+        private LinkedList<CameraConfig> CamerasConfigurations;
+
+        private String camera_datas_path;
+        private Cameras(LinkedList<CameraConfig> cameraConfigurations, String camera_datas_path) {
+            this.CamerasConfigurations = CamerasConfigurations;
+            this.camera_datas_path = camera_datas_path;
+        }
+
+    }
+    private class CameraConfig{
+        private int id;
+        private int frequency;
+
+        private String camera_key;
+        private CameraConfig(int id, int frequency, String camera_key) {
+            this.id = id;
+            this.frequency = frequency;
+            this.camera_key = camera_key;
+        }
+
+    }
+    private class LiDarWorkers{
+        private LinkedList<LiDarConfig> LidarConfigurations;
+
+        private String lidars_data_path;
+        private LiDarWorkers(LinkedList<LiDarConfig> LidarConfigurations, String lidars_data_path) {
+            this.LidarConfigurations = LidarConfigurations;
+            this.lidars_data_path = lidars_data_path;
+        }
+
+    }
+    private class LiDarConfig{
+        private int id;
+
+        private int frequency;
+        private LiDarConfig(int id, int frequency) {
+            this.id = id;
+            this.frequency = frequency;
+        }
+    }
+    private class Config {
+        private Cameras Cameras;
+        private LiDarWorkers LiDarWorkers;
+        private String poseJsonFile;
+        private int TickTime;
+
+        private int Duration;
+        private Config(Cameras Cameras, LiDarWorkers LiDarWorkers, String poseJsonFile, int TickTime, int Duration) {
+            this.Cameras = Cameras;
+            this.LiDarWorkers = LiDarWorkers;
+            this.poseJsonFile = poseJsonFile;
+            this.TickTime = TickTime;
+            this.Duration = Duration;
         }
     }
 }

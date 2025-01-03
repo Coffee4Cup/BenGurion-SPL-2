@@ -24,4 +24,9 @@ public class TrackedObjectsEvent implements Event<Boolean> {
     public Future<Boolean> getFuture() {
         return answer;
     }
+
+    @Override
+    public String toString() {
+        return "\'TrackingObjects\': " + trackedObjects ;
+    }
 }

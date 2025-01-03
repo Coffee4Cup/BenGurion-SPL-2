@@ -24,4 +24,9 @@ public class PoseEvent implements Event<Pose> {
         return future;
     }
 
+    @Override
+    public String toString() {
+        return "\'newPose\': " + newPose;
+
+    }
 }

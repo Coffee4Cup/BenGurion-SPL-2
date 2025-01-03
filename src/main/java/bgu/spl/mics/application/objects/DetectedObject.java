@@ -19,4 +19,10 @@ public class DetectedObject {
 	public String description() {
 		return description;
 	}
+
+	@Override
+	public String toString() {
+		return	"id='" + id + '\'' +
+				", description='" + description + '\'';
+	}
 }

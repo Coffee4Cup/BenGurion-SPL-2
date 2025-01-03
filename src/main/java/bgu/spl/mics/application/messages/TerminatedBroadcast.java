@@ -16,4 +16,10 @@ public class TerminatedBroadcast implements Broadcast {
     public TerminatedBroadcast(MicroService terminatedMicroservice){
         this.terminatedMicroservice = terminatedMicroservice;
     }
+
+    @Override
+    public String toString() {
+        return "\'TerminatedBroadcast\':" +
+                "terminatedMicroservice: " + terminatedMicroservice;
+    }
 }
