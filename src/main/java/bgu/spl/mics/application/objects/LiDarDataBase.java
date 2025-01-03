@@ -53,7 +53,12 @@ public class LiDarDataBase {
         return cloudPoints.get(id);
     }
 
-    public String toString(){
-        return "StampedCloudPoints: "+cloudPoints;
+    @Override
+    public String toString() {
+        return "LiDarDataBase{" +
+                "cloudPoints=" + cloudPoints +
+                '}';
+
+
     }
 }

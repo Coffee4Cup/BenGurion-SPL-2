@@ -50,9 +50,8 @@ public class LiDarService extends MicroService {
                 jobList.add(e.getStampedDetectedObjects());
             if(!jobList.isEmpty() && jobList.getFirst().getTime() >= currentTick + liDarWorkerTracker.getFrequency() ){
                 StampedDetectedObjects sdo = jobList.removeFirst();
-                System.out.println("Lidar working on job "+sdo.getTime()+" at "+currentTick);
+                System.out.println("Lidar working on job: " + sdo + " at time: "+currentTick);
                 LinkedList<DetectedObject> doList = sdo.getDetectedObjects();
-                MessageBusImpl.getInstance().complete(e, true);
                 LinkedList<TrackedObject> toList = new LinkedList<>();
                 for(DetectedObject d : doList){
                     StampedCloudPoints scp = LiDarDataBase.getInstance(liDarWorkerTracker.getPath()).getStampedCloudPoints(sdo.getTime()+d.id());
@@ -62,6 +61,7 @@ public class LiDarService extends MicroService {
                         toList.add(to);
                     }
                 }
+                MessageBusImpl.getInstance().complete(e, true);
                 Future<Boolean> f = sendEvent(new TrackedObjectsEvent(toList));
                 liDarWorkerTracker.addTrackedObjects(toList.size());
                 detectionHistory.add(f);
