@@ -43,13 +43,13 @@ public class PoseService extends MicroService {
         subscribeBroadcast(CrashedBroadcast.class, c-> {
             terminate();
             sendBroadcast(new TerminatedBroadcast(this));
-            System.out.println("Terminated PoseService");
+    //        System.out.println("Terminated PoseService");
         });
         subscribeBroadcast(TerminatedBroadcast.class, t-> {
             if(t.getService() instanceof TimeService){
                 terminate();
                 sendBroadcast(new TerminatedBroadcast(this));
-                System.out.println("Terminated PoseService");
+    //            System.out.println("Terminated PoseService");
             }
         });
         gpsimu.setStatus(STATUS.UP);

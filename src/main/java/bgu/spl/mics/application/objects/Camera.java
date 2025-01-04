@@ -66,8 +66,17 @@ public class Camera {
             sdo =  detectedObjectList.remove(time - frequency);
             for(DetectedObject detectedObject: sdo.getDetectedObjects()) {
                 if(detectedObject.id().equals("ERROR")) {
-                    error(detectedObject.description());
-                    return null;
+                    if(!sdo.removeError()) {
+                        lastFrames = sdo;
+                        error(detectedObject.description());
+                        objecstDetected(sdo.getNumOfDetectedObjects());
+                        return sdo;
+
+                    }
+                    else {
+                        error(detectedObject.description());
+                        return null;
+                    }
                 }
             }
             objecstDetected(sdo.getNumOfDetectedObjects());

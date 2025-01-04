@@ -113,40 +113,42 @@ public class GurionRockRunner {
             //fields are id, frequency and String camera_key which represents its KEY in Map<String, List<SDO> we created
             for(CameraConfig cfg : config.Cameras.CamerasConfigurations){
                 myCameras.add(new Camera(cfg.id, cfg.frequency, cfg.camera_key,  cameraData.get(cfg.camera_key), statisticalFolder));
-                System.out.println(myCameras.getLast());
+            //    System.out.println(myCameras.getLast());
             }
             LinkedList<LiDarWorkerTracker> myLidars = new LinkedList<>();
             int index = 1;
             for(LiDarConfig cfg: config.LiDarWorkers.LidarConfigurations){
                 myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, "lidar"+index++, confDir + config.LiDarWorkers.lidars_data_path.substring(1), statisticalFolder));
             }
-            System.out.println(myLidars.getFirst());
+        //    System.out.println(myLidars.getFirst());
             configReader = new FileReader(confDir + config.poseJsonFile.substring(1));
             Type poseListType = new TypeToken<LinkedList<Pose>>() {}.getType();
             GPSIMU gpsimu = new GPSIMU(gson.fromJson(configReader, poseListType));
-            System.out.println(gpsimu +" \ntick:" + config.TickTime + " duration:" + config.Duration);
+    //        System.out.println(gpsimu +" \ntick:" + config.TickTime + " duration:" + config.Duration);
 
             //TODO implement threads with executor service. Make sure TimeService runs last!
             LinkedList<MicroService> services = new LinkedList<>();
             for(Camera camera : myCameras){
                 CameraService cameraService = new CameraService(camera);
                 services.add(cameraService);
-                FusionSlam.getInstance().addCamera(camera);
+         //       FusionSlam.getInstance().addCamera(camera);
             }
             for(LiDarWorkerTracker lidar : myLidars){
                 LiDarService liDarService = new LiDarService(lidar);
                 services.add(liDarService);
-                FusionSlam.getInstance().addLidar(lidar);
+        //        FusionSlam.getInstance().addLidar(lidar);
             }
             PoseService poseService = new PoseService(gpsimu);
             services.add(poseService);
             FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
             services.add(fusionSlamService);
             FusionSlam.getInstance().setStatisticalFolder(statisticalFolder);
-            FusionSlam.getInstance().setTimeService(timeService);
-            FusionSlam.getInstance().setGpsimu(gpsimu);
+      //      FusionSlam.getInstance().setTimeService(timeService);
+    //        FusionSlam.getInstance().setGpsimu(gpsimu);
             Object sysLock = new Object();
             FusionSlam.getInstance().setSysLock(sysLock);
+            FusionSlam.getInstance().setCameraCount(myCameras.size());
+            FusionSlam.getInstance().setLidarCount(myLidars.size());
             LinkedList<Thread> threads = new LinkedList<>();
             for(MicroService service : services){
                 Thread t = new Thread(service);

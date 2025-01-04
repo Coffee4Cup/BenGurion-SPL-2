@@ -48,7 +48,7 @@ public class LiDarDataBase {
                 Type SCPType = new TypeToken<LinkedList<StampedCloudPoints>>() {}.getType();
                 LinkedList<StampedCloudPoints> scpList = gson.fromJson(reader, SCPType);
                 instance = new LiDarDataBase(scpList);
-                System.out.println(instance);
+           //     System.out.println(instance);
             } catch (FileNotFoundException e) {
                 System.out.println("File not found at: " + filePath);
                 return null;

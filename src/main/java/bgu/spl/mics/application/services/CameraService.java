@@ -38,23 +38,23 @@ public class CameraService extends MicroService {
      */
     @Override
     protected void initialize() {
-        System.out.println("Initializing CameraService");
+    //    System.out.println("Initializing CameraService");
         subscribeBroadcast(TickBroadcast.class, t -> {
-            System.out.println(getName() + " is processing tick "+t.getTick());
-            StampedDetectedObjects sdo = camera.getDetectedObjectList(t.getTick() - camera.getFrequency());
+        //    System.out.println(getName() + " is processing tick "+t.getTick());
+            StampedDetectedObjects sdo = camera.getDetectedObjectList(t.getTick());
             if(sdo != null){
                 Future<Boolean> f = sendEvent(new DetectedObjectEvent(sdo));
                 detectionHistory.add(f);
             }
-            else{
-                if(camera.getStatus() != STATUS.UP){
-                    terminate();
-                    if(camera.getStatus() == STATUS.ERROR)
-                        sendBroadcast(new CrashedBroadcast());
-                    else
-                        sendBroadcast(new TerminatedBroadcast(this));
-                }
+
+            if(camera.getStatus() != STATUS.UP){
+                terminate();
+                if(camera.getStatus() == STATUS.ERROR)
+                    sendBroadcast(new CrashedBroadcast());
+                else
+                    sendBroadcast(new TerminatedBroadcast(this));
             }
+
         });
         subscribeBroadcast(TerminatedBroadcast.class, t -> {
             if(t.getService() instanceof TimeService){
@@ -62,7 +62,7 @@ public class CameraService extends MicroService {
                 terminate();
                 sendBroadcast(new TerminatedBroadcast(this));
             }
-            System.out.println("Terminated CameraService, score is ");
+        //    System.out.println("Terminated CameraService, score is ");
         });
         subscribeBroadcast(CrashedBroadcast.class, t->{
             camera.updateLastFrames();

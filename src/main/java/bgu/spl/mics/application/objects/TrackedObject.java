@@ -31,4 +31,8 @@ public class TrackedObject {
     public LinkedList<CloudPoint> getCoordinates() {
         return coordinates;
     }
+
+    public String toString(){
+        return "ID: "+id+ ", Time: "+time+ ", Coordinates: "+coordinates;
+    }
 }

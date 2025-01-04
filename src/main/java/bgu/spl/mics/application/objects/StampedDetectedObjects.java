@@ -23,6 +23,12 @@ public class StampedDetectedObjects {
     public int getTime() {
         return time;
     }
+    public boolean removeError(){
+    //    System.out.println(this);
+        detectedObjects.removeIf(detectedObject -> detectedObject.id().equals("ERROR"));
+  //      System.out.println(this);
+        return detectedObjects.isEmpty();
+    }
 
     public int getNumOfDetectedObjects() {
         return detectedObjects.size();

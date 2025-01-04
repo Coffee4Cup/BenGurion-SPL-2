@@ -45,9 +45,9 @@ public class LiDarWorkerTracker {
     public LinkedList<TrackedObject> submitJob(StampedDetectedObjects stampedDetectedObjects, int currentTick) {
         if (stampedDetectedObjects != null)
             jobList.add(stampedDetectedObjects);
-        if (!jobList.isEmpty() && jobList.getFirst().getTime() <= currentTick + frequency) {
+        if (!jobList.isEmpty() && jobList.getFirst().getTime() + frequency <= currentTick ) {
             StampedDetectedObjects sdo = jobList.removeFirst();
-            System.out.println("Lidar working on job " + sdo.getTime() + " at " + currentTick);
+       //     System.out.println("Lidar working on job " + sdo.getTime() + " at " + currentTick);
             if (LiDarDataBase.getInstance(lidars_data_path).getStampedCloudPoints(sdo.getTime() + "ERROR") != null) {
                 error("Error in " + getName() + " at time " + sdo.getTime());
                 return null;
@@ -60,7 +60,8 @@ public class LiDarWorkerTracker {
 
                 if (scp != null) {
                     TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
-                    System.out.println("found scp: " + scp);
+           //         System.out.println("Tracking "+to + "\nsize "+to.getCoordinates().size());
+          //          System.out.println("found scp: " + scp);
                     toList.add(to);
                 }
             }

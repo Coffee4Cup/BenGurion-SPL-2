@@ -40,9 +40,9 @@ public class FusionSlamService extends MicroService {
         });
 
         subscribeEvent(InitializedEvent.class, e-> {
-            InitializedEvent initialization = fusion.startProcess(e);
+            InitializedEvent initialization = fusion.startProcessUsingIndicators(e);
             if(initialization != null){
-                complete(e, true);
+                complete(initialization, true);
             }
         });
 
@@ -52,14 +52,24 @@ public class FusionSlamService extends MicroService {
         subscribeBroadcast(CrashedBroadcast.class, c-> {
             fusion.crash();
             terminate();
-            System.out.println("Terminated FusionSlamService");
+        //    System.out.println("Terminated FusionSlamService");
         });
         subscribeBroadcast(TerminatedBroadcast.class, t-> {
-            if(t.getService() instanceof TimeService || fusion.termination()) {
+            if(t.getService() instanceof CameraService){
+                fusion.cameraTerminated();
+            }
+            else if(t.getService() instanceof LiDarService){
+                fusion.lidarTerminated();
+            }
+            else if(t.getService() instanceof PoseService){
+                fusion.GPSTerminated();
+            }
+            if(t.getService() instanceof TimeService || fusion.checkAndTerminate()) {
                 fusion.finish();
                 terminate();
+                sendBroadcast(new TerminatedBroadcast(this));
             }
-            System.out.println("Terminated FusionSlamService");
+        //    System.out.println("Terminated FusionSlamService");
         });
     }
 }

@@ -30,8 +30,18 @@ public class LandMark {
     }
 
     public void updateCoordinates(LandMark newDetection) {
+        //new logic for more than 2 points
+   //     System.out.println("Current calculation:"+coordinates.size());
+   //     System.out.println("new calculation:"+newDetection.coordinates.size());
+        for(int i=0; i<coordinates.size() && i<newDetection.coordinates.size(); i++){
+            coordinates.get(i).update(newDetection.coordinates.get(i));
+        }
+        for(int i=coordinates.size(); i<newDetection.coordinates.size(); i++){
+            coordinates.add(newDetection.coordinates.get(i));
+        }
+/**     old logic for 2 points
         this.coordinates.get(0).update(newDetection.coordinates.get(0));
-        this.coordinates.get(1).update(newDetection.coordinates.get(1));
+        this.coordinates.get(1).update(newDetection.coordinates.get(1)); */
     }
 
     public String toString(){

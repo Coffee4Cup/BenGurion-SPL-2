@@ -2,6 +2,7 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.InitializedEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
@@ -44,10 +45,35 @@ public class TimeService extends MicroService {
     @Override
     protected void initialize() {
         subscribeBroadcast(TerminatedBroadcast.class, t->terminate());
-        System.out.println("Starting TimeService");
+    //    System.out.println("Starting TimeService");
+        subscribeBroadcast(TickBroadcast.class, t->{
+            try{
+                TimeUnit.SECONDS.sleep(tickTime);
+            } catch (InterruptedException e) {
+                terminate();
+                sendBroadcast(new TerminatedBroadcast(this));
+            }
+            currentTick = t.getTick()+1;
+            sendBroadcast(new TickBroadcast(currentTick));
+            if(currentTick == duration){
+                terminate();
+                sendBroadcast(new TerminatedBroadcast(this));
+            }
+        });
+        subscribeBroadcast(TerminatedBroadcast.class, t->{
+            if(t.getService() instanceof FusionSlamService){
+                terminate();
+                sendBroadcast(new TerminatedBroadcast(this));
+            }
+        });
+        subscribeBroadcast(CrashedBroadcast.class, c->{
+            terminate();
+            sendBroadcast(new TerminatedBroadcast(this));
+        });
         Future<Boolean> start = sendEvent(new InitializedEvent(this));
         start.get();
-        try{
+        sendBroadcast(new TickBroadcast(currentTick));
+   /**     try{
 
             while(currentTick < duration) {
                 TimeUnit.SECONDS.sleep(tickTime);
@@ -56,9 +82,9 @@ public class TimeService extends MicroService {
             }
 
         }catch (InterruptedException e) {
-            System.out.println("Clock stopped");
+    //        System.out.println("Clock stopped");
         }
-        terminate();
-        sendBroadcast(new TerminatedBroadcast());
+    terminate();
+    sendBroadcast(new TerminatedBroadcast(this));*/
     }
 }

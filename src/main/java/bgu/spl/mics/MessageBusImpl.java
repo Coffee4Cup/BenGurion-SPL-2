@@ -43,7 +43,7 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	private MessageBusImpl(){
-		System.out.println("Initializing MessageBusImpl");
+	//	System.out.println("Initializing MessageBusImpl");
 		bus = new HashMap<MicroService, LinkedBlockingQueue<Message>>();
 		eventSubscriptions = new HashMap<Class<? extends Event<?>>, LinkedList<MicroService>>();
 		broadcastSubscriptions = new HashMap<Class<? extends Broadcast>, LinkedList<MicroService>>();
@@ -52,7 +52,7 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-		System.out.println(m.getName() + " subscribed to ");
+	//	System.out.println(m.getName() + " subscribed to ");
 		LinkedList<MicroService> eventSubs;
 		synchronized(eventSubscriptions) {
 			//get list of ms subbed to event
@@ -77,7 +77,7 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-		System.out.println(m.getName() + " subscribing to ");
+	//	System.out.println(m.getName() + " subscribing to ");
 		LinkedList<MicroService> broadcastSubs;
 		synchronized(broadcastSubscriptions) {
 			//get list of ms subbed to broadcast
@@ -97,7 +97,7 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		System.out.println("Sending Broadcast");
+	//	System.out.println("Sending Broadcast");
 		LinkedList<MicroService> subs;
 		synchronized(broadcastSubscriptions) {
 			subs = broadcastSubscriptions.get(b.getClass());
@@ -114,7 +114,7 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
-		System.out.println("Sending event: " + e);
+	//	System.out.println("Sending event: " + e);
 		LinkedList<MicroService> subs;
 		synchronized(eventSubscriptions) {
 			//get list of ms subbed to event
@@ -146,7 +146,7 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public void register(MicroService m) {
-		System.out.println(m.getName() + " registered");
+	//	System.out.println(m.getName() + " registered");
 		synchronized(bus){
 			bus.put(m, new LinkedBlockingQueue<Message>());			//when do i sub? NOW!
 		}
@@ -160,7 +160,7 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
-		System.out.println(m.getName() + " awaiting message");
+	//	System.out.println(m.getName() + " awaiting message");
 		LinkedBlockingQueue<Message> queue;
 		synchronized(bus) {			//TODO check if necessary to lock here
 			queue = bus.get(m);
