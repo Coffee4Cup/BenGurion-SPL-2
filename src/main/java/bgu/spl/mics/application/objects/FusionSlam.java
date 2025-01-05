@@ -236,8 +236,10 @@ public class FusionSlam {
     public void calculate(LinkedList<TrackedObject> trackedObjects){
         if(trackedObjects == null || trackedObjects.isEmpty())
             return;
-        trackedObjects.addAll(backup);
-        backup = new LinkedList<>();
+        if(!backup.isEmpty()) {
+            trackedObjects.addAll(backup);
+            backup = new LinkedList<>();
+        }
 
         for(TrackedObject to : trackedObjects) {
             Pose currentPose = getPose(to.getTime());
@@ -277,6 +279,11 @@ public class FusionSlam {
             if (updateMap(new LandMark(to.getId(), to.getDescription(), globalCloudPoints)))
                 addLandMarks(1);
         }
+    }
+
+    //TEST METHODS
+    public HashMap<String, LandMark> getLandMarkLinkedList(){
+        return landMarkLinkedList;
     }
 
 }

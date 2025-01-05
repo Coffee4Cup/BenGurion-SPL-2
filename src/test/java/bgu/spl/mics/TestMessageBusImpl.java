@@ -111,12 +111,12 @@ public class TestMessageBusImpl {
 	@AfterEach
 	public void tearDown() {
 		
-	}/**
+	}
 	@Test
 	public void testRegister(){
-		for(Thread t: threadList){
-			t.start();
-		}
+		for(MicroService m: testServices){
+			MessageBusImpl.getInstance().register(m);
+		}/**
 		try{
 			Thread.sleep(1000);
 			microService.sendBroadcast(new TerminatedBroadcast());
@@ -125,16 +125,15 @@ public class TestMessageBusImpl {
 			}
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
-		}
-		System.out.println((messageBus.getInstance().getBusSize()));
-		assertTrue(messageBus.getInstance().getBusSize() == 10);
+		}*/
+        assertEquals(10, (int) MessageBusImpl.getInstance().getBusSize());
 	}
 
 	@Test
 	public void testSubscribeBroadcast() {
-		for(Thread t: threadList){
-			t.start();
-		}
+		for(MicroService m : testServices){
+			m.subscribeBroadcast(TerminatedBroadcast.class, (t) -> m.terminate());
+		}/**
 		try{
 			Thread.sleep(1000);
 			microService.sendBroadcast(new TerminatedBroadcast());
@@ -143,16 +142,19 @@ public class TestMessageBusImpl {
 			}
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
-		}
-		assertTrue(messageBus.getInstance().getBroadcastSubsSize(DummyBroadcast.class) == 10);
-		assertTrue(messageBus.getInstance().getBroadcastSubsSize(TerminatedBroadcast.class) == 10);
+		}*/
+       // assertEquals(10, (int) MessageBusImpl.getInstance().getBroadcastSubsSize(DummyBroadcast.class));
+        assertEquals(10, (int) MessageBusImpl.getInstance().getBroadcastSubsSize(TerminatedBroadcast.class));
 
 	}
 	@Test
 	public void testSubscribeEvent() {
-		for(Thread t: threadList){
-			t.start();
-		}
+		for(MicroService m : testServices){
+			m.subscribeEvent(DummyEvent.class, (event) -> {
+				if (event.getDummyString().equals("Query"))
+					m.complete(event, "response by " + m.getName());
+			});
+		}/**
 		try{
 			Thread.sleep(1000);
 			microService.sendBroadcast(new TerminatedBroadcast());
@@ -161,10 +163,10 @@ public class TestMessageBusImpl {
 			}
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
-		}
-		assertTrue(messageBus.getInstance().getEventSubsSize(DummyEvent.class) == 10);
+		}*/
+        assertEquals(10, (int) MessageBusImpl.getInstance().getEventSubsSize(DummyEvent.class));
 
-	}
+	}/**
 	@Test
 	public void testComplete() {
 

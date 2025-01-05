@@ -54,8 +54,6 @@ public class Camera {
         return isDone;
     }
 
-
-
     public StampedDetectedObjects  getDetectedObjectList(int time) {
         StampedDetectedObjects sdo;
         if(time >= finalTick){
