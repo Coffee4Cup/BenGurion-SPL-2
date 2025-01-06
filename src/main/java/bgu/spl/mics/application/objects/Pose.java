@@ -32,4 +32,10 @@ public class Pose {
     public String toString(){
         return "x: " + x + ", y: " + y + ", yaw: " + yaw + ", time: " + time;
     }
+
+    //FOR TESTS ONLY
+
+    public void setTime(int newTime){
+        time = newTime;
+    }
 }

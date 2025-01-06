@@ -243,6 +243,7 @@ public class FusionSlam {
 
         for(TrackedObject to : trackedObjects) {
             Pose currentPose = getPose(to.getTime());
+       //     System.out.println("pose: "+currentPose);
             if(currentPose == null) {
                 backup.add(to);
                 continue;
@@ -254,12 +255,14 @@ public class FusionSlam {
             float yawRad = (currentPose.getYaw() * (float) Math.PI) / 180;
             float cosRad = (float) Math.cos(yawRad);
             float sinRad = (float) Math.sin(yawRad);
-
+   //         System.out.println("yaw: " + yawRad + " cos: " + cosRad + " sin: " + sinRad);
             //new logic for more than 2 coordinates
             for (CloudPoint local : localCloudPoints) {
+ //               System.out.println(" local: " + local);
                 CloudPoint global = new CloudPoint(
                         currentPose.getX() + ((local.x() * cosRad) - (local.y() * sinRad)),
                         currentPose.getY() + ((local.x() * sinRad) + (local.y() * cosRad)));
+   //             System.out.println(" global: " + global);
                 globalCloudPoints.add(global);
             }
 
@@ -284,6 +287,16 @@ public class FusionSlam {
     //TEST METHODS
     public HashMap<String, LandMark> getLandMarkLinkedList(){
         return landMarkLinkedList;
+    }
+
+    public void resetLandMarks(){
+        landMarkLinkedList.clear();
+    }
+    public void resetPoses(){
+        poseList.clear();
+    }
+    public void clearBackUp(){
+       backup.clear();
     }
 
 }

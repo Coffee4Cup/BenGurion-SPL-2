@@ -19,4 +19,9 @@ public class DetectedObject {
 	public String description() {
 		return description;
 	}
+
+	//FOR TESTS ONLY
+	public void setId(String newId){
+		id = newId;
+	}
 }

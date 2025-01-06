@@ -44,6 +44,12 @@ public class LandMark {
         this.coordinates.get(1).update(newDetection.coordinates.get(1)); */
     }
 
+    //Used only for TESTS
+
+    public LinkedList<CloudPoint> getCoordinates(){
+        return coordinates;
+    }
+
     public String toString(){
         return "ID: "+id+ ", Coordinates: "+coordinates;
     }
