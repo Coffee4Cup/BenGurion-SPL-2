@@ -45,9 +45,7 @@ public class GurionRockRunner {
             this.camera_datas_path = camera_datas_path;
         }
         private void fixPath(){
-            if(camera_datas_path.charAt(0) == '.'){
-                camera_datas_path = camera_datas_path.substring(1);
-            }
+            camera_datas_path = camera_datas_path.substring(camera_datas_path.indexOf(FileSystems.getDefault().getSeparator())+1);
         }
     }
 
@@ -72,9 +70,7 @@ public class GurionRockRunner {
             this.lidars_data_path = lidars_data_path;
         }
         private void fixPath(){
-            if(lidars_data_path.charAt(0) == '.'){
-                lidars_data_path = lidars_data_path.substring(1);
-            }
+            lidars_data_path = lidars_data_path.substring(lidars_data_path.indexOf(FileSystems.getDefault().getSeparator())+1);
         }
     }
 
@@ -102,16 +98,26 @@ public class GurionRockRunner {
             this.Duration = Duration;
         }
         private void fixPath(){
-            if(poseJsonFile.charAt(0) == '.'){
-                poseJsonFile = poseJsonFile.substring(1);
-            }
+            poseJsonFile = poseJsonFile.substring(poseJsonFile.indexOf(FileSystems.getDefault().getSeparator())+1);
             Cameras.fixPath();
             LiDarWorkers.fixPath();
         }
 
     }
     public static void main(String[] args) {
-        String confDir = args[0].substring(0, args[0].lastIndexOf(FileSystems.getDefault().getSeparator()));
+        int lastSepLocation = args[0].lastIndexOf(FileSystems.getDefault().getSeparator());
+        int firstSepLocation = args[0].indexOf(FileSystems.getDefault().getSeparator());
+        String confDir;
+
+
+         if(firstSepLocation == 0)
+            confDir = ".";
+        else if(firstSepLocation == 1 && args[0].charAt(0) =='.')
+            confDir = "";
+        else //firstSepLocation == -1 ||firstSepLocation > 1
+            confDir = "." + FileSystems.getDefault().getSeparator();
+
+        confDir = confDir + args[0].substring(0, lastSepLocation+1);
         Gson gson = new Gson();
         try {
             StatisticalFolder statisticalFolder = new StatisticalFolder();
