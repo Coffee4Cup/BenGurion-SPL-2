@@ -14,7 +14,8 @@ public class Future<T> {
 	private T result;
 	private final Object lock;
 	/**
-	 * This should be the the only public constructor in this class.
+	 * This should be the only public constructor in this class.
+	 *
 	 */
 	public Future() {
 		result = null;
@@ -27,7 +28,10 @@ public class Future<T> {
      * not been completed.
      * <p>
      * @return return the result of type T if it is available, if not wait until it is available.
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
+	 *
+	 * @pre: none
+	 * @post: isdone() == true
      * 	       
      */
 	public T get() {
@@ -45,6 +49,9 @@ public class Future<T> {
 	
 	/**
      * Resolves the result of this Future object.
+	 *
+	 *
+	 *
      */
 	public void resolve (T result) {
 		synchronized(lock) {

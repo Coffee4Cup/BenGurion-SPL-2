@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * @post: lidarCounter = {@Pre: lidarCounter}
  * Manages the fusion of sensor data for simultaneous localization and mapping (SLAM).
  * Combines data from multiple sensors (e.g., LiDAR, camera) to build and update a global map.
  * Implements the Singleton pattern to ensure a single instance of FusionSlam exists.
@@ -36,12 +37,20 @@ public class FusionSlam {
     private boolean GPSSTATUS;
     private boolean CLOCKSTATUS;
 
+    /**
+ * @post: statisticalFolder.lastPoses updated with poseList values.
+ * @post: statisticalFolder.finalLandMarks updated with landMarkLinkedList values.
+ * @Pre: StatisticalFolder object must be initialized before calling this method.
+     */
     public void crash() {
         statisticalFolder.setLastPoses(new LinkedList<>(poseList.values()));
         statisticalFolder.setFinalLandMarks(new LinkedList<>(landMarkLinkedList.values()));
         interruptClock();
     }
 
+    /**
+ * @post: GPSSTATUS = false.
+     */
     public void GPSTerminated() {
  //       System.out.println("GPSTerminated");
         GPSSTATUS = false;
@@ -65,29 +74,50 @@ public class FusionSlam {
         backup = new LinkedList<>();
     }
 
+    /**
+ * @post: cameraNumber = count.
+     */
     public void setCameraCount(int count){
         cameraNumber = count;
     }
+    /**
+ * @post: lidarNumber = count.
+     */
     public void setLidarCount(int count){
         lidarNumber = count;
     }
 
+    /**
+ * @post: cameraCounter = {@Pre: cameraCounter} + 1.
+     */
     public void cameraInitialized(){
         cameraCounter++;
     }
+    /**
+ * @post: lidarCounter = {@Pre: lidarCounter} + 1.
+     */
     public void lidarInitialized(){
         lidarCounter++;
     }
 
+    /**
+ * @post: cameraCounter = {@Pre: cameraCounter} - 1.
+     */
     public void cameraTerminated(){
   //      System.out.println("cameraTerminated");
         cameraCounter--;
     }
+    /**
+ * @post: lidarCounter = {@Pre: lidarCounter} - 1.
+     */
     public void lidarTerminated(){
  //       System.out.println("lidarTerminated");
         lidarCounter--;
     }
 
+    /**
+ * @post: Returns true and ensures clock is interrupted if all sensor counters and GPSSTATUS are down.
+     */
     public boolean checkAndTerminate(){
         if(cameraCounter == 0  && lidarCounter == 0 && !GPSSTATUS){
             interruptClock();
@@ -96,24 +126,39 @@ public class FusionSlam {
         return false;
     }
 
+    /**
+ * @post: statisticalFolder.landMarks incremented by amount.
+    */
     public void addLandMarks(int amount){
         statisticalFolder.addLandMarks(amount);
     }
 
+    /**
+ * @post: sysLock is set to argument value.
+     */
     public void setSysLock(Object sysLock){
         this.sysLock = sysLock;
     }
 
+    /**
+ * @post: Returns singleton instance of FusionSlam.
+     */
     public static FusionSlam getInstance() {
         return FusionSlam.FusionSlamHolder.instance;
     }
 
+    /**
+ * @post: Adds or updates a Pose object in poseList synchronized on poseList.
+     */
     public void setPose(Pose pose) {
         synchronized (poseList) {
             poseList.put(pose.getTime(), pose);
         }
     }
-
+    /**
+ * @post: statisticalFolder set to argument value.
+     */
+    public void setStatisticalFolder(StatisticalFolder statisticalFolder) {
     public void setStatisticalFolder(StatisticalFolder statisticalFolder) {
         this.statisticalFolder = statisticalFolder;
     }
@@ -152,12 +197,18 @@ public class FusionSlam {
         return true;
     }*/
 
+    /**
+ * @post: sysLock.notifyAll called within a synchronized block.
+     */
     public void interruptClock(){
         synchronized (sysLock){
             sysLock.notifyAll();
         }
     }
 
+    /**
+ * @post: Returns Pose associated with tick or null if nonexistent.
+     */
     public Pose getPose(int tick) {
        synchronized (poseList) {
            if (!poseList.containsKey(tick)) {
@@ -179,10 +230,17 @@ public class FusionSlam {
         }
     }*/
 
+    /**
+ * @post: statisticalFolder.finalLandMarks set to current landMarkLinkedList values.
+     */
     public void finish(){
         statisticalFolder.setFinalLandMarks(new LinkedList<>(landMarkLinkedList.values()));
     }
 
+    /**
+ * @post: Updates landMarkLinkedList with a new or updated LandMark and updates coordinates of matched landmarks.
+ *       Returns true if a new LandMark is added, false otherwise.
+     */
     public boolean updateMap(LandMark landMark) {
         synchronized (landMarkLinkedList) {
             if(!landMarkLinkedList.containsKey(landMark.getId())){
@@ -198,6 +256,11 @@ public class FusionSlam {
         }
     }
 
+    /**
+ * @post: Updates relevant initialization indicators (e.g., camera/lidar counters, statuses) and returns
+ *       InitializedEvent if preconditions for system initialization are met.
+ * @Pre: All required services (time, GPS, camera, LiDAR) should be registered/in use.
+     */
     public InitializedEvent startProcessUsingIndicators(InitializedEvent e){
         if(e.getService() instanceof TimeService){
             initialization = e;
@@ -233,6 +296,10 @@ public class FusionSlam {
             return initialization;
     }*/
 
+    /**
+ * @post: Processes trackedObjects to compute global CloudPoints and update map.
+ *       Adds unprocessed objects to backup.
+     */
     public void calculate(LinkedList<TrackedObject> trackedObjects){
         if(trackedObjects == null || trackedObjects.isEmpty())
             return;
@@ -285,16 +352,28 @@ public class FusionSlam {
     }
 
     //TEST METHODS
+    /**
+ * @post: Returns all landmarks as a HashMap.
+     */
     public HashMap<String, LandMark> getLandMarkLinkedList(){
         return landMarkLinkedList;
     }
 
+    /**
+ * @post: Clears all landmarks from landMarkLinkedList.
+     */
     public void resetLandMarks(){
         landMarkLinkedList.clear();
     }
+    /**
+ * @post: Clears all poses from poseList.
+     */
     public void resetPoses(){
         poseList.clear();
     }
+    /**
+ * @post: Clears the backup list of tracked objects.
+     */
     public void clearBackUp(){
        backup.clear();
     }

@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
+import java.nio.file.FileSystems;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -92,7 +93,7 @@ public class GurionRockRunner {
         }
     }
     public static void main(String[] args) {
-        String confDir = args[0].substring(0, args[0].lastIndexOf("/"));
+        String confDir = args[0].substring(0, args[0].lastIndexOf(FileSystems.getDefault().getSeparator()));
         Gson gson = new Gson();
         try {
             StatisticalFolder statisticalFolder = new StatisticalFolder();

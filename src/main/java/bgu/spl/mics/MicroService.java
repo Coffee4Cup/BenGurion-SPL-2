@@ -20,10 +20,69 @@ import java.util.HashMap;
  * Only private fields and methods may be added to this class.
  * <p>
  */
+/**
+ * Class Invariants:
+ *
+ * 1. Field: `terminated`
+ *    - The `terminated` flag must always start as `false` upon initialization of the `MicroService`.
+ *    - It remains `false` until explicitly set to `true` by a call to the `terminate()` method, which signals the event loop to stop execution.
+ *    - Once `true`, no further messages are processed by the `run()` method.
+ *
+ * 2. Field: `eventCallbacks`
+ *    - The `eventCallbacks` map **always contains valid mappings** where:
+ *      - Keys are `Class` objects of types that extend `Event<?>`.
+ *      - Values are `Callback<?>` implementations corresponding to the event type.
+ *    - No invalid or null entries are allowed in the map.
+ *    - For all keys added to `eventCallbacks`, the associated event type has been subscribed to via the `MessageBus` using the `MessageBusImpl.getInstance().subscribeEvent(type, this)` method call.
+ *
+ * 3. Field: `broadcastCallbacks`
+ *    - The `broadcastCallbacks` map **always contains valid mappings** where:
+ *      - Keys are `Class` objects of types that extend `Broadcast`.
+ *      - Values are `Callback<?>` implementations corresponding to the broadcast type.
+ *    - No invalid or null entries are allowed in the map.
+ *    - For all keys added to `broadcastCallbacks`, the associated broadcast type has been subscribed to via the `MessageBus` using the `MessageBusImpl.getInstance().subscribeBroadcast(type, this)` method call.
+ *
+ * 4. Field: `name`
+ *    - The field `name` is assigned a value exactly once at construction time and is never modified afterward.
+ *    - It is guaranteed to be non-null throughout the lifetime of the `MicroService`.
+ *
+ * 5. Callback Consistency
+ *    - For all received messages (events and broadcasts), if a message type exists in either the `eventCallbacks` or `broadcastCallbacks` map, its associated `Callback` will be invoked by the `run()` method.
+ *    - No message type outside these maps can have a callback invoked.
+ *    - The `Callback.call()` method is invoked in response to valid messages of types subscribed to by the microservice.
+ *
+ * 6. MessageBus Registration
+ *    - Every instance of `MicroService` is **registered once** with the `MessageBus` singleton upon the start of its `run()` method.
+ *    - The microservice is properly unregistered (via appropriate handling or termination) before the instance is discarded.
+ *
+ * 7. Subscription and Registry Consistency
+ *    - Any event or broadcast type subscribed to (via `subscribeEvent` or `subscribeBroadcast`) is guaranteed to be registered with the `MessageBus`.
+ *    - The `MessageBus` is informed of subscriptions before corresponding entries are added to `eventCallbacks` or `broadcastCallbacks`.
+ *
+ * 8. Lifecycle Management
+ *    - The `MicroService`'s state reflects the following lifecycle:
+ *      1. **Initialization Phase**:
+ *         - The `initialize()` abstract method is called exactly once during the start of the `run()` method.
+ *      2. **Active Phase**:
+ *         - The event loop in `run()` must continue processing messages until `terminate()` sets `terminated` to `true`.
+ *      3. **Termination Phase**:
+ *         - No further messages are processed after `terminated` is set to `true`.
+ *
+ * 9. Thread Safety
+ *    - The `eventCallbacks` and `broadcastCallbacks` maps are not exposed directly to any other object or thread.
+ *    - Access or modifications to these fields are only allowed:
+ *      - Via `subscribeEvent`.
+ *      - Via `subscribeBroadcast`.
+ *      - Through controlled internal operations in the `run()` loop.
+ *
+ * 10. Non-Blocking Behavior in Communication
+ *     - The `sendEvent()` method returns a `Future<>` that might be resolved later by another service, and never blocks the execution of the calling microservice.
+ *     - The `sendBroadcast()` method is non-blocking and immediately sends the broadcast message to all subscribers.
+ */
 public abstract class MicroService implements Runnable {
     private boolean terminated = false;
     private final String name;
-    private  HashMap<Class<? extends Event<?>>, Callback<? extends Event<?>>> eventCallbacks;
+    private  HashMap<Class<? extends Event<?>>, Callback<? extends Event<?>>> eventCallbacks; //@inv: eventcallbacks.get
     private  HashMap<Class<? extends Broadcast>, Callback<? extends Broadcast>> broadcastCallbacks;
 
     /**
