@@ -136,17 +136,21 @@ public class StatisticalFolder {
             this.landMarks = statisticalFolder.landmarks;
         }
     }
-    public void output(Gson gson, String directory){
-        try(FileWriter writer = new FileWriter(directory + "/outputTEST.json")){
-            if(error){
+    public void output(Gson gson, String directory) {
+        if (error) {
+            try (FileWriter writer = new FileWriter(directory + "/OutputERROR.json")) {
                 ErrorOutput errorOutput = new ErrorOutput(this);
                 gson.toJson(errorOutput, writer);
-            }else{
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try (FileWriter writer = new FileWriter(directory + "/output_file.json")) {
                 Output output = new Output(this);
                 gson.toJson(output, writer);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

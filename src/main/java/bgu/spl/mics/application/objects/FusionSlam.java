@@ -235,6 +235,7 @@ public class FusionSlam {
      */
     public void finish(){
         statisticalFolder.setFinalLandMarks(new LinkedList<>(landMarkLinkedList.values()));
+        interruptClock();
     }
 
     /**

@@ -55,7 +55,7 @@ public class TimeService extends MicroService {
             }
             currentTick = t.getTick()+1;
             sendBroadcast(new TickBroadcast(currentTick));
-            if(currentTick == duration){
+            if(currentTick >= duration){
                 terminate();
                 sendBroadcast(new TerminatedBroadcast(this));
             }

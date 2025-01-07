@@ -58,6 +58,7 @@ public class CameraService extends MicroService {
         });
         subscribeBroadcast(TerminatedBroadcast.class, t -> {
             if(t.getService() instanceof TimeService){
+                camera.updateLastFrames();
                 camera.setStatus(STATUS.DOWN);
                 terminate();
                 sendBroadcast(new TerminatedBroadcast(this));
