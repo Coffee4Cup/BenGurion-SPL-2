@@ -122,7 +122,7 @@ public class GurionRockRunner {
         try {
             StatisticalFolder statisticalFolder = new StatisticalFolder();
             //Reader from java IO to read config file
-            Reader configReader = new FileReader(args[0]);
+            Reader configReader = new FileReader(confDir + args[0].substring(args[0].indexOf("configuration_file.json")));
             //New class Config with fields corresponding to configuration_file.json
             Config config = gson.fromJson(configReader, Config.class);
             config.fixPath();
