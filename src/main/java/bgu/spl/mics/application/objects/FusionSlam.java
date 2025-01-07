@@ -181,6 +181,7 @@ public class FusionSlam {
 
     public void finish(){
         statisticalFolder.setFinalLandMarks(new LinkedList<>(landMarkLinkedList.values()));
+        interruptClock();
     }
 
     public boolean updateMap(LandMark landMark) {

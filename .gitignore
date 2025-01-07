@@ -6,6 +6,8 @@ example_input_2/*
 .idea
 target/*
 ./src/main/java/bgu/spl/mics/example/*
+./src/test/java/bgu/spl/mics/TestFuture.java
+./src/test/java/bgu/spl/mics/TestMicroService.java
 camera_data.json
 configuration_file.json
 lidar_data.json

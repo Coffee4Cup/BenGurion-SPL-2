@@ -56,7 +56,7 @@ public class Camera {
 
     public StampedDetectedObjects  getDetectedObjectList(int time) {
         StampedDetectedObjects sdo;
-        if(time >= finalTick){
+        if(time >= finalTick + frequency){
             isDone = true;
             status = STATUS.DOWN;
         }

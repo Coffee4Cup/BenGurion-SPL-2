@@ -43,6 +43,11 @@ public class GurionRockRunner {
             this.CamerasConfigurations = CamerasConfigurations;
             this.camera_datas_path = camera_datas_path;
         }
+        private void fixPath(){
+            if(camera_datas_path.charAt(0) == '.'){
+                camera_datas_path = camera_datas_path.substring(1);
+            }
+        }
     }
 
     private class CameraConfig{
@@ -64,6 +69,11 @@ public class GurionRockRunner {
         private LiDarWorkers(LinkedList<LiDarConfig> LidarConfigurations, String lidars_data_path) {
             this.LidarConfigurations = LidarConfigurations;
             this.lidars_data_path = lidars_data_path;
+        }
+        private void fixPath(){
+            if(lidars_data_path.charAt(0) == '.'){
+                lidars_data_path = lidars_data_path.substring(1);
+            }
         }
     }
 
@@ -90,6 +100,14 @@ public class GurionRockRunner {
             this.TickTime = TickTime;
             this.Duration = Duration;
         }
+        private void fixPath(){
+            if(poseJsonFile.charAt(0) == '.'){
+                poseJsonFile = poseJsonFile.substring(1);
+            }
+            Cameras.fixPath();
+            LiDarWorkers.fixPath();
+        }
+
     }
     public static void main(String[] args) {
         String confDir = args[0].substring(0, args[0].lastIndexOf("/"));
@@ -100,8 +118,9 @@ public class GurionRockRunner {
             Reader configReader = new FileReader(args[0]);
             //New class Config with fields corresponding to configuration_file.json
             Config config = gson.fromJson(configReader, Config.class);
+            config.fixPath();
             //Reading from new file addressed in configuration_file.json
-            configReader = new FileReader(confDir +  config.Cameras.camera_datas_path.substring(1));
+            configReader = new FileReader(confDir +  config.Cameras.camera_datas_path);
             //creating a new TypeToken to parse camera_data.json into Map<String, List<StampedDetectedObject>>
             Type cameraDataType = new TypeToken<Map<String, LinkedList<StampedDetectedObjects>>>() {}.getType();
             Map<String, LinkedList<StampedDetectedObjects>> cameraData = gson.fromJson(configReader, cameraDataType);
@@ -118,10 +137,10 @@ public class GurionRockRunner {
             LinkedList<LiDarWorkerTracker> myLidars = new LinkedList<>();
             int index = 1;
             for(LiDarConfig cfg: config.LiDarWorkers.LidarConfigurations){
-                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, "lidar"+index++, confDir + config.LiDarWorkers.lidars_data_path.substring(1), statisticalFolder));
+                myLidars.add(new LiDarWorkerTracker(cfg.id, cfg.frequency, "lidar"+index++, confDir + config.LiDarWorkers.lidars_data_path, statisticalFolder));
             }
         //    System.out.println(myLidars.getFirst());
-            configReader = new FileReader(confDir + config.poseJsonFile.substring(1));
+            configReader = new FileReader(confDir + config.poseJsonFile);
             Type poseListType = new TypeToken<LinkedList<Pose>>() {}.getType();
             GPSIMU gpsimu = new GPSIMU(gson.fromJson(configReader, poseListType));
     //        System.out.println(gpsimu +" \ntick:" + config.TickTime + " duration:" + config.Duration);
@@ -180,7 +199,6 @@ public class GurionRockRunner {
             t4.start();
             t5.start();*/
             //output.json creation:
-            //TODO implement output.json creation
             try{
                 synchronized(sysLock) {
                     sysLock.wait();
