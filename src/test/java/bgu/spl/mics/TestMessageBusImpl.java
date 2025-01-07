@@ -112,6 +112,12 @@ public class TestMessageBusImpl {
 	public void tearDown() {
 		
 	}
+
+	/**@var MicroService m
+	 *
+	 * @Pre non
+	 * @Post MessageBusImpl.bus.contains(m) == true
+	 */
 	@Test
 	public void testRegister(){
 		for(MicroService m: testServices){
@@ -128,7 +134,11 @@ public class TestMessageBusImpl {
 		}*/
         assertEquals(10, (int) MessageBusImpl.getInstance().getBusSize());
 	}
-
+	/**@param B class extends Broadcast.class
+	 *
+	 * @Pre MessageBusImpl.bus.contains(m) == true
+	 * @Post MessageBusImpl.broadcastSubscriptions.get(B).contains(m)
+	 */
 	@Test
 	public void testSubscribeBroadcast() {
 		for(MicroService m : testServices){
@@ -147,6 +157,12 @@ public class TestMessageBusImpl {
         assertEquals(10, (int) MessageBusImpl.getInstance().getBroadcastSubsSize(TerminatedBroadcast.class));
 
 	}
+
+	/**@param E class extends Event.class
+	 *
+	 * @Pre MessageBusImpl.bus.contains(m) == true
+	 * @Post MessageBusImpl.eventSubscriptions.get(E).contains(m)
+	 */
 	@Test
 	public void testSubscribeEvent() {
 		for(MicroService m : testServices){

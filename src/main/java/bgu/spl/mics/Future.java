@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Future<T> {
 	private T result;
-	private Object lock;
+	private final Object lock;
 	/**
 	 * This should be the the only public constructor in this class.
 	 */
