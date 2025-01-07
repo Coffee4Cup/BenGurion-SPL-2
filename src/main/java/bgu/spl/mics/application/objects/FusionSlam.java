@@ -159,7 +159,6 @@ public class FusionSlam {
  * @post: statisticalFolder set to argument value.
      */
     public void setStatisticalFolder(StatisticalFolder statisticalFolder) {
-    public void setStatisticalFolder(StatisticalFolder statisticalFolder) {
         this.statisticalFolder = statisticalFolder;
     }
     /**
