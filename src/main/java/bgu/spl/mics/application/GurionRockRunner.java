@@ -119,6 +119,7 @@ public class GurionRockRunner {
             //New class Config with fields corresponding to configuration_file.json
             Config config = gson.fromJson(configReader, Config.class);
             config.fixPath();
+            LiDarDataBase.initialize(confDir + config.LiDarWorkers.lidars_data_path);
             //Reading from new file addressed in configuration_file.json
             configReader = new FileReader(confDir +  config.Cameras.camera_datas_path);
             //creating a new TypeToken to parse camera_data.json into Map<String, List<StampedDetectedObject>>

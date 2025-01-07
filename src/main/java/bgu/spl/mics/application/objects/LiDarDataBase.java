@@ -15,11 +15,27 @@ import java.util.LinkedList;
  * It provides access to cloud point data and other relevant information for tracked objects.
  */
 public class LiDarDataBase {
+    public static final Type SCP_TYPE = new TypeToken<LinkedList<StampedCloudPoints>>() {
+    }.getType();
+    private static final Gson gson = new Gson();
+    private static Type scpType;
+    private static LinkedList<StampedCloudPoints> scpList;
     private HashMap<String, StampedCloudPoints> cloudPoints;
     private static volatile LiDarDataBase instance;
     private int finalTick;
     private boolean isDone;
 
+    public synchronized static void initialize(String dataPath){
+        try {
+            Reader reader = new FileReader(dataPath);
+            scpType = SCP_TYPE;
+            scpList = gson.fromJson(reader, scpType);
+            instance = new LiDarDataBase(scpList);
+            //     System.out.println(instance);
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found at: " + dataPath);
+        }
+    }
 
     private LiDarDataBase(LinkedList<StampedCloudPoints> cloudPoints) {
         this.cloudPoints = new HashMap<>();
@@ -37,24 +53,9 @@ public class LiDarDataBase {
     /**
      * Returns the singleton instance of LiDarDataBase.
      *
-     * @param filePath The path to the LiDAR data file.
      * @return The singleton instance of LiDarDataBase.
      */
-    public synchronized static LiDarDataBase getInstance(String filePath){
-        if (instance == null) {
-            try {
-                Gson gson = new Gson();
-                Reader reader = new FileReader(filePath);
-                Type SCPType = new TypeToken<LinkedList<StampedCloudPoints>>() {}.getType();
-                LinkedList<StampedCloudPoints> scpList = gson.fromJson(reader, SCPType);
-                instance = new LiDarDataBase(scpList);
-           //     System.out.println(instance);
-            } catch (FileNotFoundException e) {
-                System.out.println("File not found at: " + filePath);
-                return null;
-            }
-
-        }
+    public static LiDarDataBase getInstance(){
         return instance;
     }
 
