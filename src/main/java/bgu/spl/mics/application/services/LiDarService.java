@@ -87,7 +87,7 @@ public class LiDarService extends MicroService {
 
         });
         subscribeBroadcast(TerminatedBroadcast.class, t-> {
-            if(t.getService() instanceof TimeService){
+            if(t.getService() instanceof TimeService || LiDarDataBase.getInstance().isDone()){
                 liDarWorkerTracker.setStatus(STATUS.DOWN);
                 liDarWorkerTracker.updateLastFrames();
                 sendBroadcast(new TerminatedBroadcast(this));
