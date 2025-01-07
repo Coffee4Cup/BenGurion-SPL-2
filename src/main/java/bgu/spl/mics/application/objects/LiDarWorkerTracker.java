@@ -48,7 +48,7 @@ public class LiDarWorkerTracker {
         if (!jobList.isEmpty() && jobList.getFirst().getTime() + frequency <= currentTick ) {
             StampedDetectedObjects sdo = jobList.removeFirst();
        //     System.out.println("Lidar working on job " + sdo.getTime() + " at " + currentTick);
-            if (LiDarDataBase.getInstance(lidars_data_path).getStampedCloudPoints(sdo.getTime() + "ERROR") != null) {
+            if (LiDarDataBase.getInstance().getStampedCloudPoints(sdo.getTime() + "ERROR") != null) {
                 error("Error in " + getName() + " at time " + sdo.getTime());
                 return null;
             }
@@ -56,7 +56,7 @@ public class LiDarWorkerTracker {
             LinkedList<TrackedObject> toList = new LinkedList<>();
             for (DetectedObject d : doList) {
 
-                StampedCloudPoints scp = LiDarDataBase.getInstance(lidars_data_path).getStampedCloudPoints(sdo.getTime() + d.id());
+                StampedCloudPoints scp = LiDarDataBase.getInstance().getStampedCloudPoints(sdo.getTime() + d.id());
 
                 if (scp != null) {
                     TrackedObject to = new TrackedObject(d.id(), sdo.getTime(), d.description(), scp.getCloudPoint());
@@ -65,7 +65,7 @@ public class LiDarWorkerTracker {
                     toList.add(to);
                 }
             }
-            if (LiDarDataBase.getInstance(lidars_data_path).isDone()) {
+            if (LiDarDataBase.getInstance().isDone()) {
                 status = STATUS.DOWN;
             }
             statisticalFolder.addTrackedObjects(toList.size());
